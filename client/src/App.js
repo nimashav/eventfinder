@@ -5,6 +5,7 @@ import LandingPage from './pages/LandingPage/LandingPage';
 import AddEvent from './pages/AddEvent/AddEvent';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ApprovedEvents from './pages/Admin/ApprovedEvents';
+import UserManagement from './pages/Admin/UserManagement';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/approved" element={<ApprovedEvents />} />
           <Route path="/admin/pending" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<UserManagement />} />
           {/* Additional routes can be added here as the app expands */}
         </Routes>
       </div>
