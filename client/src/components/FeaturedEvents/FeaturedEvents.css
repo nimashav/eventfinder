@@ -77,6 +77,8 @@
 
 .event-info {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .event-info h3 {
@@ -111,6 +113,7 @@
   align-items: center;
   padding-top: 15px;
   border-top: 1px solid var(--border);
+  gap: 50px;
 }
 
 .event-price {
@@ -123,10 +126,16 @@
   color: var(--secondary);
   font-weight: 600;
   transition: all 0.3s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 0.95rem;
 }
 
 .view-details:hover {
   color: var(--primary);
+  text-decoration: none;
 }
 
 @media (max-width: 768px) {

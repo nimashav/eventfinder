@@ -1,27 +1,51 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './RecommendedEvents.css';
+import EventDetailsModal from '../EventDetailsModal/EventDetailsModal';
 
 const RecommendedEvents = () => {
-  // Sample recommended event data
+  // Modal state
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Sample recommended event data with expanded details
   const recommendedEvents = [
     {
       id: 1,
-      title: 'An Evening of Smooth Jazz',
+      title: 'Fun-Festa Carnival',
       category: 'Music',
       date: 'Nov 15, 2025',
       location: 'The Blue Note',
-      image: '/images/jazz.jpg',
+      image: '/images/Fun-Festa-carnival.jpg',
       price: '$40',
+      description: 'A vibrant music carnival with live performances, food stalls, and fun activities for all ages.',
+      organizer: 'City Events Group',
+      highlights: [
+        'Live bands and DJs',
+        'Carnival games and prizes',
+        'Street food and drinks',
+        'Family-friendly atmosphere',
+        'Fireworks show at night'
+      ]
     },
     {
       id: 2,
-      title: 'Urban Poetry Slam',
+      title: 'Nimnada-Concert',
       category: 'Art & Culture',
       date: 'Dec 5, 2025',
       location: 'Community Hall',
-      image: '/images/poetry-slam.jpg',
+      image: '/images/Nimnada-Concert.jpg',
       price: '$15',
+      description: 'A cultural concert featuring traditional and modern performances by local artists.',
+      organizer: 'Nimnada Arts Foundation',
+      highlights: [
+        'Traditional music and dance',
+        'Artisan market',
+        'Meet the performers',
+        'Cultural workshops',
+        'Refreshments included'
+      ]
     },
     {
       id: 3,
@@ -29,8 +53,17 @@ const RecommendedEvents = () => {
       category: 'Tech & Innovation',
       date: 'Jan 10-12, 2026',
       location: 'Innovation Hub',
-      image: '/images/hackathon.jpg',
+      image: '/images/hackathon.png',
       price: '$50',
+      description: 'A 48-hour hackathon for developers, designers, and entrepreneurs to build innovative tech solutions.',
+      organizer: 'Tech Innovators',
+      highlights: [
+        'Team and solo tracks',
+        'Mentorship sessions',
+        'Prizes for top projects',
+        'Networking opportunities',
+        'Free swag and meals'
+      ]
     },
     {
       id: 4,
@@ -38,8 +71,17 @@ const RecommendedEvents = () => {
       category: 'Sports',
       date: 'Feb 15, 2026',
       location: 'Downtown Loop',
-      image: '/images/marathon.jpg',
+      image: '/images/annual marathon.png',
       price: '$80',
+      description: 'Join thousands of runners in the city’s biggest marathon event. All skill levels welcome!',
+      organizer: 'City Sports League',
+      highlights: [
+        'Full and half marathon options',
+        'Finisher medals',
+        'Hydration stations',
+        'Live music along the route',
+        'Charity fundraising'
+      ]
     },
     {
       id: 5,
@@ -47,8 +89,17 @@ const RecommendedEvents = () => {
       category: 'Food & Drink',
       date: 'Nov 17, 2025',
       location: 'Culinary Institute',
-      image: '/images/pasta-workshop.jpg',
+      image: '/images/pasta workshop.jpg',
       price: '$30',
+      description: 'Learn to make authentic pasta from scratch with expert chefs. Includes tasting session.',
+      organizer: 'Culinary Institute',
+      highlights: [
+        'Hands-on pasta making',
+        'Recipe booklet included',
+        'Tasting session',
+        'Certificate of completion',
+        'All skill levels welcome'
+      ]
     },
     {
       id: 6,
@@ -58,6 +109,15 @@ const RecommendedEvents = () => {
       location: 'The Arena',
       image: '/images/rock-show.jpg',
       price: '$60',
+      description: 'Experience an electrifying live rock concert by The Thunderbolts with special guests.',
+      organizer: 'Arena Live',
+      highlights: [
+        'Opening acts',
+        'Merchandise stalls',
+        'Meet & greet passes',
+        'Food and drinks available',
+        'After-party event'
+      ]
     },
     {
       id: 7,
@@ -65,8 +125,17 @@ const RecommendedEvents = () => {
       category: 'Art & Culture',
       date: 'May 10-11, 2026',
       location: 'Media Studio',
-      image: '/images/photography.jpg',
+      image: '/images/tech-summit.png',
       price: '$120',
+      description: 'Take your photography skills to the next level with hands-on training and expert tips.',
+      organizer: 'Media Studio',
+      highlights: [
+        'Studio and outdoor sessions',
+        'Portfolio review',
+        'Equipment provided',
+        'Small group sizes',
+        'Certificate included'
+      ]
     },
     {
       id: 8,
@@ -74,10 +143,29 @@ const RecommendedEvents = () => {
       category: 'Tech & Innovation',
       date: 'June 3, 2026',
       location: 'Online Event',
-      image: '/images/ai-webinar.jpg',
+      image: '/images/webinar.png',
       price: 'Free',
+      description: 'A free online webinar exploring the impact of AI on daily life, with expert speakers.',
+      organizer: 'AI Insights',
+      highlights: [
+        'Live Q&A session',
+        'Downloadable resources',
+        'Certificate of attendance',
+        'Networking lounge',
+        'Giveaways for attendees'
+      ]
     },
   ];
+
+  const openModal = (event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
 
   return (
     <section className="recommended-events section">
@@ -113,9 +201,12 @@ const RecommendedEvents = () => {
                 </div>
                 <div className="event-footer">
                   <span className="event-price">{event.price}</span>
-                  <Link to={`/event/${event.id}`} className="view-details">
+                  <button 
+                    onClick={() => openModal(event)}
+                    className="view-details"
+                  >
                     View Details
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>
@@ -127,6 +218,14 @@ const RecommendedEvents = () => {
             Show More Events
           </Link>
         </div>
+
+        {/* Event Details Modal */}
+        {isModalOpen && (
+          <EventDetailsModal 
+            event={selectedEvent} 
+            onClose={closeModal}
+          />
+        )}
       </div>
     </section>
   );

@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './FeaturedEvents.css';
+import EventDetailsModal from '../EventDetailsModal/EventDetailsModal';
 
 const FeaturedEvents = () => {
-  // Sample featured event data
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Sample featured event data with expanded details
   const featuredEvents = [
     {
       id: 1,
@@ -11,8 +15,17 @@ const FeaturedEvents = () => {
       category: 'Music',
       date: 'July 15-17, 2025',
       location: 'Central Park, NY',
-      image: '/images/music-festival.jpg',
+      image: '/images/music-festival.png',
       price: '$75',
+      description: 'Experience the ultimate summer music festival featuring world-class artists across multiple genres. From rock to pop, electronic to indie, this three-day musical journey will captivate your senses.',
+      organizer: 'Summer Events Co.',
+      highlights: [
+        'Over 50 artists across 4 stages',
+        'Food trucks and local vendors',
+        'Interactive art installations',
+        'VIP experiences available',
+        'Eco-friendly festival grounds'
+      ]
     },
     {
       id: 2,
@@ -20,8 +33,17 @@ const FeaturedEvents = () => {
       category: 'Art & Culture',
       date: 'Aug 7-20, 2025',
       location: 'Metropolitan Gallery',
-      image: '/images/art-exhibition.jpg',
+      image: '/images/art-exhibition.png',
       price: '$25',
+      description: 'Discover contemporary masterpieces from renowned artists worldwide. This curated exhibition showcases the evolution of modern art through interactive displays and immersive experiences.',
+      organizer: 'Metropolitan Gallery',
+      highlights: [
+        'Works from 30+ international artists',
+        'Interactive digital displays',
+        'Guided tours available',
+        'Artist meet & greet sessions',
+        'Student discounts available'
+      ]
     },
     {
       id: 3,
@@ -29,8 +51,17 @@ const FeaturedEvents = () => {
       category: 'Tech & Innovation',
       date: 'Sept 9-10, 2025',
       location: 'Innovation Hub',
-      image: '/images/tech-summit.jpg',
+      image: '/images/tech-summit.png',
       price: '$399',
+      description: 'Join industry leaders and innovators for two days of cutting-edge technology discussions, networking opportunities, and hands-on workshops covering AI, blockchain, and emerging technologies.',
+      organizer: 'Tech Innovation Group',
+      highlights: [
+        'Keynote speakers from Fortune 500 companies',
+        'Hands-on workshops and demos',
+        'Networking opportunities',
+        'Startup pitch competition',
+        'Latest tech product showcases'
+      ]
     },
     {
       id: 4,
@@ -38,10 +69,29 @@ const FeaturedEvents = () => {
       category: 'Food & Drink',
       date: 'Oct 15-18, 2025',
       location: 'Harbor Plaza',
-      image: '/images/food-fair.jpg',
+      image: '/images/food-fair.png',
       price: 'Free',
+      description: 'Embark on a culinary journey around the world without leaving the city. Sample authentic dishes from different cultures, watch cooking demonstrations, and participate in food-related activities.',
+      organizer: 'Cultural Food Alliance',
+      highlights: [
+        'Cuisine from 20+ countries',
+        'Live cooking demonstrations',
+        'Food competitions and contests',
+        'Family-friendly activities',
+        'Cultural performances'
+      ]
     },
   ];
+
+  const openModal = (event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
 
   return (
     <section className="featured-events section">
@@ -77,15 +127,26 @@ const FeaturedEvents = () => {
                 </div>
                 <div className="event-footer">
                   <span className="event-price">{event.price}</span>
-                  <Link to={`/event/${event.id}`} className="view-details">
+                  <button 
+                    onClick={() => openModal(event)}
+                    className="view-details"
+                  >
                     View Details
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+      
+      {/* Event Details Modal */}
+      {isModalOpen && (
+        <EventDetailsModal 
+          event={selectedEvent} 
+          onClose={closeModal}
+        />
+      )}
     </section>
   );
 };
