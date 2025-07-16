@@ -1,25 +1,29 @@
-import logo from './logo.svg';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
+import './styles/globals.css';
+import LandingPage from './pages/LandingPage/LandingPage';
+import AddEvent from './pages/AddEvent/AddEvent';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import ApprovedEvents from './pages/Admin/ApprovedEvents';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/add-event" element={<AddEvent />} />
+          <Route path="/submit-event" element={<AddEvent />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/approved" element={<ApprovedEvents />} />
+          <Route path="/admin/pending" element={<AdminDashboard />} />
+          {/* Additional routes can be added here as the app expands */}
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
 export default App;
+
