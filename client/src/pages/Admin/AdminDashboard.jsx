@@ -188,11 +188,12 @@ const AdminDashboard = () => {
                     </svg>
                   </div>
                   <div className="stat-content">
-                    <h3>Featured Events</h3>
-                    <span className="stat-number">{featuredCount}</span>
-                    <p>Events marked as featured priority</p>
+                    <h3>Rejected Events</h3>
+                    <span className="stat-number">{stats.rejected}</span>
+                    <p>Events marked as rejected</p>
                   </div>
                 </div>
+
 
                 <div className="stat-card">
                   <div className="stat-icon review">

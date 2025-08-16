@@ -78,4 +78,18 @@ const eventSchema = new mongoose.Schema({
 eventSchema.index({ status: 1, submittedAt: -1 });
 eventSchema.index({ category: 1 });
 
+// Virtual for location (alias for address)
+eventSchema.virtual('location').get(function () {
+  return this.address;
+});
+
+// Virtual for title (alias for eventName)
+eventSchema.virtual('title').get(function () {
+  return this.eventName;
+});
+
+// Ensure virtual fields are serialized
+eventSchema.set('toJSON', { virtuals: true });
+eventSchema.set('toObject', { virtuals: true });
+
 module.exports = mongoose.model('Event', eventSchema);

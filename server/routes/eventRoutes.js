@@ -36,6 +36,23 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET approved events (specific route before /:id)
+router.get('/approved', async (req, res) => {
+  try {
+    const approvedEvents = await Event.find({ status: 'approved' }).sort({ createdAt: -1 });
+    res.json({
+      success: true,
+      data: approvedEvents
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch approved events',
+      error: error.message
+    });
+  }
+});
+
 // GET single event by ID
 router.get('/:id', async (req, res) => {
   try {
@@ -192,6 +209,53 @@ router.put('/:id/status', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to update event status',
+      error: error.message
+    });
+  }
+});
+
+// Update event priority (for approved events)
+router.put('/:id/priority', async (req, res) => {
+  try {
+    const { priority } = req.body;
+
+    // Validate priority
+    if (!priority || !['recommended', 'featured'].includes(priority)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid priority. Must be: recommended or featured'
+      });
+    }
+
+    // Find the event and check if it's approved
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: 'Event not found'
+      });
+    }
+
+    if (event.status !== 'approved') {
+      return res.status(400).json({
+        success: false,
+        message: 'Can only update priority for approved events'
+      });
+    }
+
+    // Update priority
+    event.priority = priority;
+    await event.save();
+
+    res.json({
+      success: true,
+      message: 'Event priority updated successfully',
+      data: event
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update event priority',
       error: error.message
     });
   }

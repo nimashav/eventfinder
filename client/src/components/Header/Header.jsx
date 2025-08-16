@@ -4,7 +4,7 @@ import './Header.css';
 
 const Header = () => {
   return (
-    <header className="header">
+    <div className="header">
       <div className="container">
         <div className="header-content">
           <div className="logo">
@@ -19,7 +19,7 @@ const Header = () => {
           <nav className="main-nav">
             <ul>
               <li><Link to="/browse-events">Browse Events</Link></li>
-              <li><Link to="/add-event">My Events</Link></li>
+              <li><Link to="/my-events">My Events</Link></li>
             </ul>
           </nav>
 
@@ -37,7 +37,7 @@ const Header = () => {
           </div>
         </div>
       </div>
-    </header>
+    </div>
   );
 };
 

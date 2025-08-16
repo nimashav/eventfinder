@@ -12,105 +12,6 @@ const ApprovedEvents = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
 
-  // Sample data for approved events
-  const approvedEvents = [
-    {
-      id: 1,
-      title: 'Annual Tech Conference',
-      date: '2024-08-15',
-      location: 'Virtual',
-      category: 'Conference',
-      organizer: 'John Doe',
-      status: 'Live',
-      attendees: 1250,
-      revenue: '$45,000',
-      image: 'https://via.placeholder.com/40x40'
-    },
-    {
-      id: 2,
-      title: 'Data Science Workshop',
-      date: '2024-08-01',
-      location: 'New York',
-      category: 'Workshop',
-      organizer: 'Jane Smith',
-      status: 'Completed',
-      attendees: 320,
-      revenue: '$12,500',
-      image: 'https://via.placeholder.com/40x40'
-    },
-    {
-      id: 3,
-      title: 'Future of AI Webinar',
-      date: '2024-09-10',
-      location: 'Online',
-      category: 'Webinar',
-      organizer: 'Mike Johnson',
-      status: 'Upcoming',
-      attendees: 850,
-      revenue: '$25,000',
-      image: 'https://via.placeholder.com/40x40'
-    },
-    {
-      id: 4,
-      title: 'Leadership Summit',
-      date: '2024-09-22',
-      location: 'London',
-      category: 'Seminar',
-      organizer: 'Sarah Wilson',
-      status: 'Live',
-      attendees: 580,
-      revenue: '$32,000',
-      image: 'https://via.placeholder.com/40x40'
-    },
-    {
-      id: 5,
-      title: 'Community Hackathon',
-      date: '2024-10-05',
-      location: 'San Francisco',
-      category: 'Community',
-      organizer: 'David Brown',
-      status: 'Upcoming',
-      attendees: 200,
-      revenue: '$8,000',
-      image: 'https://via.placeholder.com/40x40'
-    },
-    {
-      id: 6,
-      title: 'Digital Marketing Bootcamp',
-      date: '2024-07-20',
-      location: 'Chicago',
-      category: 'Workshop',
-      organizer: 'Emily Davis',
-      status: 'Completed',
-      attendees: 450,
-      revenue: '$18,000',
-      image: 'https://via.placeholder.com/40x40'
-    },
-    {
-      id: 7,
-      title: 'Startup Pitch Competition',
-      date: '2024-08-30',
-      location: 'Austin',
-      category: 'Community',
-      organizer: 'Robert Chen',
-      status: 'Live',
-      attendees: 750,
-      revenue: '$35,000',
-      image: 'https://via.placeholder.com/40x40'
-    },
-    {
-      id: 8,
-      title: 'Cloud Computing Seminar',
-      date: '2024-09-15',
-      location: 'Seattle',
-      category: 'Seminar',
-      organizer: 'Lisa Wang',
-      status: 'Upcoming',
-      attendees: 400,
-      revenue: '$15,000',
-      image: 'https://via.placeholder.com/40x40'
-    }
-  ];
 
   const filteredEvents = approvedEvents.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -177,32 +78,6 @@ const ApprovedEvents = () => {
                       <h4>Upcoming Events</h4>
                       <span className="stat-number">{upcomingEvents}</span>
                       <p>Next 30 days</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon revenue">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div className="stat-content">
-                      <h4>Total Revenue</h4>
-                      <span className="stat-number">${totalRevenue.toLocaleString()}</span>
-                      <p>+8% vs previous period</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon attendees">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                      </svg>
-                    </div>
-                    <div className="stat-content">
-                      <h4>Total Attendees</h4>
-                      <span className="stat-number">{totalAttendees.toLocaleString()}</span>
-                      <p>Across all events</p>
                     </div>
                   </div>
                 </div>
@@ -283,9 +158,8 @@ const ApprovedEvents = () => {
                         <th>Date & Time</th>
                         <th>Location</th>
                         <th>Category</th>
-                        <th>Attendees</th>
-                        <th>Revenue</th>
-                        <th>Status</th>
+                        <th>Organizer</th>
+                        <th>Priority</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
@@ -343,21 +217,8 @@ const ApprovedEvents = () => {
                           </td>
                           <td>
                             <div className="action-buttons">
-                              <button className="action-btn edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
-                                </svg>
-                              </button>
-                              <button className="action-btn view">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                              </button>
-                              <button className="action-btn delete">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                </svg>
+                              <button >
+                                view details
                               </button>
                             </div>
                           </td>
