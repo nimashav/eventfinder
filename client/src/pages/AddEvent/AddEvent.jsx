@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header/Header.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import './AddEvent.css';
 
 const AddEvent = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     eventName: '',
     description: '',
@@ -12,22 +13,51 @@ const AddEvent = () => {
     date: '',
     time: '',
     category: '',
-    image: null
+    image: null,
+    organizer: {
+      name: '',
+      email: '',
+      phone: ''
+    }
   });
 
   const [imagePreview, setImagePreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState({ type: '', message: '' });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+
+    // Handle nested organizer fields
+    if (name.startsWith('organizer.')) {
+      const field = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        organizer: {
+          ...prev.organizer,
+          [field]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setSubmitMessage({
+          type: 'error',
+          message: 'Image size must be less than 5MB'
+        });
+        return;
+      }
+
       setFormData(prev => ({
         ...prev,
         image: file
@@ -42,10 +72,81 @@ const AddEvent = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Event data:', formData);
-    // Handle form submission logic here
+    setIsSubmitting(true);
+    setSubmitMessage({ type: '', message: '' });
+
+    try {
+      // Prepare form data for submission
+      const submitData = {
+        eventName: formData.eventName.trim(),
+        description: formData.description.trim(),
+        address: formData.address.trim(),
+        date: formData.date,
+        time: formData.time,
+        category: formData.category,
+        organizer: {
+          name: formData.organizer.name.trim() || 'Anonymous',
+          email: formData.organizer.email.trim(),
+          phone: formData.organizer.phone.trim()
+        }
+      };
+
+      // For now, we'll just store the image name
+      // In a real app, you'd upload to a file service
+      if (formData.image) {
+        submitData.image = formData.image.name;
+      }
+
+      // Send to backend
+      const response = await fetch('http://localhost:5001/api/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitMessage({
+          type: 'success',
+          message: 'Event submitted successfully! It will be reviewed by admin before being published.'
+        });
+
+        // Reset form after successful submission
+        setTimeout(() => {
+          setFormData({
+            eventName: '',
+            description: '',
+            address: '',
+            date: '',
+            time: '',
+            category: '',
+            image: null,
+            organizer: { name: '', email: '', phone: '' }
+          });
+          setImagePreview(null);
+          // Optionally navigate to success page
+          // navigate('/events');
+        }, 3000);
+      } else {
+        setSubmitMessage({
+          type: 'error',
+          message: result.message || 'Failed to submit event. Please try again.'
+        });
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      setSubmitMessage({
+        type: 'error',
+        message: 'Network error. Please check your connection and try again.'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -57,9 +158,11 @@ const AddEvent = () => {
       date: '',
       time: '',
       category: '',
-      image: null
+      image: null,
+      organizer: { name: '', email: '', phone: '' }
     });
     setImagePreview(null);
+    setSubmitMessage({ type: '', message: '' });
   };
 
   return (
@@ -76,6 +179,13 @@ const AddEvent = () => {
             </div>
           </div>
 
+          {/* Success/Error Message */}
+          {submitMessage.message && (
+            <div className={`submit-message ${submitMessage.type}`}>
+              <p>{submitMessage.message}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="add-event-form">
             <div className="form-columns">
               {/* Left Column */}
@@ -86,7 +196,7 @@ const AddEvent = () => {
                   <p className="section-description">Provide the core information about your event.</p>
 
                   <div className="form-group">
-                    <label htmlFor="eventName">Event Name</label>
+                    <label htmlFor="eventName">Event Name *</label>
                     <input
                       type="text"
                       id="eventName"
@@ -95,11 +205,12 @@ const AddEvent = () => {
                       onChange={handleInputChange}
                       placeholder="e.g., Annual Tech Conference 2024"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="description">Description</label>
+                    <label htmlFor="description">Description *</label>
                     <textarea
                       id="description"
                       name="description"
@@ -108,9 +219,10 @@ const AddEvent = () => {
                       placeholder="Describe your event in detail, including key activities and why attendees should join."
                       rows="6"
                       required
+                      disabled={isSubmitting}
                     />
                     <div className="textarea-actions">
-                      <button type="button" className="format-btn">
+                      <button type="button" className="format-btn" disabled={isSubmitting}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                         </svg>
@@ -125,7 +237,7 @@ const AddEvent = () => {
                   <p className="section-description">Where will your event be held?</p>
 
                   <div className="form-group">
-                    <label htmlFor="address">Address / Venue Name</label>
+                    <label htmlFor="address">Address / Venue Name *</label>
                     <input
                       type="text"
                       id="address"
@@ -134,10 +246,58 @@ const AddEvent = () => {
                       onChange={handleInputChange}
                       placeholder="e.g., Central Convention Center, Hall A"
                       required
+                      disabled={isSubmitting}
                     />
                     <p className="field-note">
                       Tip: For online events, simply state "Online Event" or provide a meeting link here.
                     </p>
+                  </div>
+                </div>
+
+                {/* Organizer Section */}
+                <div className="form-section">
+                  <h2>Organizer Information</h2>
+                  <p className="section-description">Contact details for the event organizer.</p>
+
+                  <div className="form-group">
+                    <label htmlFor="organizer.name">Organizer Name</label>
+                    <input
+                      type="text"
+                      id="organizer.name"
+                      name="organizer.name"
+                      value={formData.organizer.name}
+                      onChange={handleInputChange}
+                      placeholder="Your name or organization"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="organizer.email">Email</label>
+                      <input
+                        type="email"
+                        id="organizer.email"
+                        name="organizer.email"
+                        value={formData.organizer.email}
+                        onChange={handleInputChange}
+                        placeholder="contact@example.com"
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="organizer.phone">Phone</label>
+                      <input
+                        type="tel"
+                        id="organizer.phone"
+                        name="organizer.phone"
+                        value={formData.organizer.phone}
+                        onChange={handleInputChange}
+                        placeholder="+1 234 567 8900"
+                        disabled={isSubmitting}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -151,19 +311,21 @@ const AddEvent = () => {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label htmlFor="date">Date</label>
+                      <label htmlFor="date">Date *</label>
                       <input
                         type="date"
                         id="date"
                         name="date"
                         value={formData.date}
                         onChange={handleInputChange}
+                        min={new Date().toISOString().split('T')[0]}
                         required
+                        disabled={isSubmitting}
                       />
                     </div>
 
                     <div className="form-group">
-                      <label htmlFor="time">Time</label>
+                      <label htmlFor="time">Time *</label>
                       <input
                         type="time"
                         id="time"
@@ -171,6 +333,7 @@ const AddEvent = () => {
                         value={formData.time}
                         onChange={handleInputChange}
                         required
+                        disabled={isSubmitting}
                       />
                     </div>
                   </div>
@@ -182,13 +345,14 @@ const AddEvent = () => {
                   <p className="section-description">Help attendees discover your event easily.</p>
 
                   <div className="form-group">
-                    <label htmlFor="category">Category</label>
+                    <label htmlFor="category">Category *</label>
                     <select
                       id="category"
                       name="category"
                       value={formData.category}
                       onChange={handleInputChange}
                       required
+                      disabled={isSubmitting}
                     >
                       <option value="">Select a category</option>
                       <option value="music">Music</option>
@@ -213,6 +377,7 @@ const AddEvent = () => {
                         onChange={handleFileChange}
                         accept="image/*"
                         className="file-input"
+                        disabled={isSubmitting}
                       />
                       <div className="image-preview">
                         {imagePreview ? (
@@ -243,11 +408,20 @@ const AddEvent = () => {
                 All submitted events are subject to administrator review and approval.
               </p>
               <div className="form-actions">
-                <button type="button" className="btn-cancel" onClick={handleCancel}>
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                >
                   Cancel
                 </button>
-                <button type="submit" className="btn-submit">
-                  Submit Event
+                <button
+                  type="submit"
+                  className="btn-submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Event'}
                 </button>
               </div>
             </div>

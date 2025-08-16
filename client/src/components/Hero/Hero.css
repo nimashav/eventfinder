@@ -1,34 +1,71 @@
 .hero {
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)), 
-              linear-gradient(135deg, #921A40, #C75B7A);
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+              url('/images/background.png');
   background-size: cover;
-  background-position: center;
+  background-position: center center;
   background-repeat: no-repeat;
+  background-attachment: fixed;
   height: 80vh;
+  min-height: 600px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   color: var(--text-light);
   position: relative;
+  overflow: hidden;
+}
+
+/* Alternative approach using pseudo-element for better browser compatibility */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/images/background.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  z-index: -2;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: -1;
 }
 
 .hero-content {
   max-width: 800px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 40px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  backdrop-filter: blur(5px);
 }
 
 .hero h1 {
   font-size: 3.5rem;
   font-weight: 800;
   margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  color: #ffffff;
 }
 
 .hero p {
   font-size: 1.2rem;
   margin-bottom: 2rem;
-  opacity: 0.9;
+  opacity: 0.95;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+  color: #ffffff;
 }
 
 .search-container {
@@ -92,6 +129,16 @@
 }
 
 @media (max-width: 768px) {
+  .hero {
+    background-attachment: scroll; /* Fixed attachment can cause issues on mobile */
+    height: 70vh;
+    min-height: 500px;
+  }
+  
+  .hero::before {
+    background-attachment: scroll;
+  }
+  
   .hero h1 {
     font-size: 2.5rem;
   }
