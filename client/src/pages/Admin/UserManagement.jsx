@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AdminHeader from '../../components/AdminHeader/AdminHeader.jsx';
 import AdminSidebar from '../../components/AdminSidebar/AdminSidebar.jsx';
+import './AdminBase.css'
 import './UserManagement.css';
 
 const UserManagement = () => {
@@ -136,17 +137,17 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="admin-dashboard">
-      <AdminHeader title="Event Admin Dashboard" />
+    <div className="admin-page admin-dashboard">
+      <AdminHeader title="EventWave Admin Dashboard" />
 
-      <div className="dashboard-container">
+      <div className="admin-dashboard-container">
         <div className="container">
-          <div className="dashboard-layout">
+          <div className="admin-dashboard-layout">
             <AdminSidebar />
 
             {/* Main Content */}
-            <main className="main-content">
-              <div className="content-header">
+            <main className="admin-main-content main-content">
+              <div className="admin-content-header content-header">
                 <h2>User Management</h2>
                 <p>Manage user accounts, roles, and permissions across the platform.</p>
               </div>
@@ -320,8 +321,8 @@ const UserManagement = () => {
             </main>
 
             {/* Right Sidebar */}
-            <aside className="right-sidebar">
-              <div className="sidebar-section">
+            <aside className="admin-right-sidebar right-sidebar">
+              <div className="admin-sidebar-section sidebar-section">
                 <h3>Quick Actions</h3>
                 <div className="quick-actions">
                   <button className="action-card">
@@ -345,7 +346,7 @@ const UserManagement = () => {
                 </div>
               </div>
 
-              <div className="sidebar-section">
+              <div className="admin-sidebar-section sidebar-section">
                 <h3>User Activity</h3>
                 <div className="activity-list">
                   <div className="activity-item">

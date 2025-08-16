@@ -1,57 +1,19 @@
-.admin-dashboard {
-  min-height: 100vh;
-  background-color: #f8f9fa;
-  font-family: 'Inter', sans-serif;
-  gap: 20px;
+/* AdminDashboard Specific Styles - Updated 2025-08-16 */
+/* Note: Base layout styles are now in AdminBase.css */
+
+/* Force gap override with higher specificity */
+.admin-dashboard .admin-dashboard-layout {
+  gap: 32px !important;
 }
 
-.dashboard-container {
-  padding: 24px 0;
-}
-
-.dashboard-container .container {
-  max-width: 1800px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-.dashboard-layout {
-  display: grid;
-  grid-template-columns: 240px 1fr 300px;
-  gap: 24px;
-  align-items: start;
-}
-
-/* Main Content */
-.main-content {
-  background-color: var(--text-light);
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.content-header {
-  margin-bottom: 24px;
-}
-
-.content-header h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-dark);
-  margin-bottom: 4px;
-}
-
-.content-header p {
-  color: #6c757d;
-  font-size: 0.9rem;
-}
+/* Dashboard specific overrides and additions */
 
 /* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  margin-bottom: 32px;
+  gap: 28px;
+  margin-bottom: 36px;
 }
 
 .stat-card {
@@ -121,14 +83,14 @@
 
 /* Events Section */
 .events-section {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .section-header h3 {
@@ -364,7 +326,7 @@
 .right-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 32px;
   position: sticky;
   top: 24px;
 }
@@ -372,7 +334,7 @@
 .sidebar-section {
   background-color: var(--text-light);
   border-radius: 8px;
-  padding: 20px;
+  padding: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 

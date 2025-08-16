@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminHeader from '../../components/AdminHeader/AdminHeader.jsx';
 import AdminSidebar from '../../components/AdminSidebar/AdminSidebar.jsx';
+import './AdminBase.css';
 import './ApprovedEvents.css';
 
 const ApprovedEvents = () => {
@@ -132,19 +133,19 @@ const ApprovedEvents = () => {
   const paginatedEvents = filteredEvents.slice(startIndex, startIndex + eventsPerPage);
 
   return (
-    <div className="admin-dashboard">
+    <div className=" admin-page admin-dashboard">
       {/* Header */}
-      <AdminHeader title="EventWave Admin" />
+      <AdminHeader title="EventWave Admin Dashboard" />
 
-      <div className="dashboard-container">
+      <div className="admin-dashboard-container">
         <div className="container">
-          <div className="dashboard-layout">
+          <div className="admin-dashboard-layout">
             {/* Sidebar */}
             <AdminSidebar />
 
             {/* Main Content */}
-            <main className="main-content">
-              <div className="content-header">
+            <main className="admin-main-content main-content">
+              <div className="admin-content-header content-header">
                 <h2>Approved Events Overview</h2>
                 <p>Manage and monitor all approved events with comprehensive analytics and insights.</p>
               </div>
@@ -390,8 +391,8 @@ const ApprovedEvents = () => {
             </main>
 
             {/* Right Sidebar - Calendar View */}
-            <aside className="right-sidebar">
-              <div className="sidebar-section">
+            <aside className="admin-right-sidebar right-sidebar">
+              <div className="admin-sidebar-section sidebar-section">
                 <h3>Calendar View</h3>
                 <div className="calendar-container">
                   <div className="calendar-header">
@@ -435,7 +436,7 @@ const ApprovedEvents = () => {
               </div>
 
               {/* Event Categories */}
-              <div className="sidebar-section">
+              <div className="admin-sidebar-section sidebar-section">
                 <h3>Event Categories</h3>
                 <div className="category-stats">
                   <div className="category-stat">

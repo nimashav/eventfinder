@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminHeader from '../../components/AdminHeader/AdminHeader.jsx';
 import AdminSidebar from '../../components/AdminSidebar/AdminSidebar.jsx';
+import './AdminBase.css';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -120,19 +121,19 @@ const AdminDashboard = () => {
   });
 
   return (
-    <div className="admin-dashboard">
+    <div className="admin-page admin-dashboard">
       {/* Header */}
-      <AdminHeader title="Event Admin Dashboard" />
+      <AdminHeader title="EventWave Admin Dashboard" />
 
-      <div className="dashboard-container">
+      <div className="admin-dashboard-container">
         <div className="container">
-          <div className="dashboard-layout">
+          <div className="admin-dashboard-layout">
             {/* Sidebar */}
             <AdminSidebar />
 
             {/* Main Content */}
-            <main className="main-content">
-              <div className="content-header">
+            <main className="admin-main-content main-content">{/* Keep both classes for specific styles */}
+              <div className="admin-content-header content-header">
                 <h2>Pending Events Overview</h2>
                 <p>Review and manage all event requests awaiting your approval.</p>
               </div>
@@ -299,8 +300,8 @@ const AdminDashboard = () => {
             </main>
 
             {/* Right Sidebar */}
-            <aside className="right-sidebar">
-              <div className="sidebar-section">
+            <aside className="admin-right-sidebar right-sidebar">
+              <div className="admin-sidebar-section sidebar-section">
                 <h3>Recent Event Activity</h3>
                 <div className="activity-list">
                   {recentActivity.map(activity => (
@@ -320,7 +321,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <div className="sidebar-section">
+              <div className="admin-sidebar-section sidebar-section">
                 <h3>Event Categories Overview</h3>
                 <p>Distribution of pending events by category</p>
                 <div className="category-chart">
