@@ -75,19 +75,19 @@
   letter-spacing: 0.05em;
 }
 
-.priority-badge.low {
+.priority-badge.none {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.priority-badge.recommended {
   background-color: #dbeafe;
   color: #1e40af;
 }
 
-.priority-badge.medium {
+.priority-badge.featured {
   background-color: #fef3c7;
   color: #d97706;
-}
-
-.priority-badge.high {
-  background-color: #fee2e2;
-  color: #dc2626;
 }
 
 /* Event placeholder for missing images */

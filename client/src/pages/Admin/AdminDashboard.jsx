@@ -64,7 +64,7 @@ const AdminDashboard = () => {
     setIsModalOpen(true);
   };
 
-  const handleApprove = async (eventId) => {
+  const handleApprove = async (eventId, priority) => {
     setIsSubmitting(true);
     try {
       const response = await fetch(`http://localhost:5001/api/events/${eventId}/status`, {
@@ -74,6 +74,7 @@ const AdminDashboard = () => {
         },
         body: JSON.stringify({
           status: 'approved',
+          priority: priority,
           reviewedBy: 'Admin', // In real app, this would be the logged-in admin
         }),
       });
@@ -81,7 +82,7 @@ const AdminDashboard = () => {
       const result = await response.json();
 
       if (result.success) {
-        setMessage({ type: 'success', text: 'Event approved successfully!' });
+        setMessage({ type: 'success', text: `Event approved successfully with ${priority} priority!` });
         setIsModalOpen(false);
         // Refresh data
         await Promise.all([fetchPendingEvents(), fetchStats()]);
@@ -137,7 +138,7 @@ const AdminDashboard = () => {
   });
 
   // Calculate priority stats
-  const highPriorityCount = pendingEvents.filter(event => event.priority === 'high').length;
+  const featuredCount = pendingEvents.filter(event => event.priority === 'featured').length;
 
   return (
     <div className="admin-page admin-dashboard">
@@ -187,9 +188,9 @@ const AdminDashboard = () => {
                     </svg>
                   </div>
                   <div className="stat-content">
-                    <h3>High Priority Events</h3>
-                    <span className="stat-number">{highPriorityCount}</span>
-                    <p>Urgent events requiring immediate attention</p>
+                    <h3>Featured Events</h3>
+                    <span className="stat-number">{featuredCount}</span>
+                    <p>Events marked as featured priority</p>
                   </div>
                 </div>
 
@@ -245,9 +246,8 @@ const AdminDashboard = () => {
                       className="filter-select"
                     >
                       <option value="">All Priorities</option>
-                      <option value="high">High</option>
-                      <option value="medium">Medium</option>
-                      <option value="low">Low</option>
+                      <option value="recommended">Recommended</option>
+                      <option value="featured">Featured</option>
                     </select>
                   </div>
                 </div>
@@ -316,8 +316,8 @@ const AdminDashboard = () => {
                                 </span>
                               </td>
                               <td>
-                                <span className={`priority-badge ${event.priority}`}>
-                                  {event.priority.charAt(0).toUpperCase() + event.priority.slice(1)}
+                                <span className={`priority-badge ${event.priority || 'none'}`}>
+                                  {event.priority ? event.priority.charAt(0).toUpperCase() + event.priority.slice(1) : 'Not Set'}
                                 </span>
                               </td>
                               <td>

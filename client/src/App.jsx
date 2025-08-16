@@ -6,6 +6,7 @@ import AddEvent from './pages/AddEvent/AddEvent.jsx';
 import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
 import ApprovedEvents from './pages/Admin/ApprovedEvents.jsx';
 import UserManagement from './pages/Admin/UserManagement.jsx';
+import MyEvents from './pages/User/MyEvents.jsx';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/add-event" element={<AddEvent />} />
           <Route path="/submit-event" element={<AddEvent />} />
+          <Route path="/my-events" element={<MyEvents />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/approved" element={<ApprovedEvents />} />

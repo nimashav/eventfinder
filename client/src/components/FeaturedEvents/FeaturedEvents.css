@@ -143,3 +143,37 @@
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
 }
+
+/* Featured Event Styling */
+.event-card.featured-event {
+  border: 2px solid #dc2626;
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.15);
+  transform: scale(1.02);
+}
+
+.event-card.featured-event:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.25);
+}
+
+.featured-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+  z-index: 2;
+}
+
+.featured-badge svg {
+  width: 14px;
+  height: 14px;
+}

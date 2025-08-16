@@ -4,7 +4,7 @@ import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 
 const MyEvents = () => {
-  const [events, setEvents] = useState([]);
+  const [events, setEvent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all');
@@ -18,18 +18,23 @@ const MyEvents = () => {
   const fetchMyEvents = async () => {
     try {
       setLoading(true);
-      const userEmail = localStorage.getItem('userEmail') || 'user@example.com'; // For demo purposes
-      const response = await fetch(`http://localhost:5001/api/events?organizerEmail=${userEmail}`);
+      // For demo purposes, show all events since we don't have user authentication
+      // In real app, you would filter by user ID
+      const response = await fetch(`http://localhost:5001/api/events`);
 
       if (!response.ok) {
         throw new Error('Failed to fetch events');
       }
 
       const data = await response.json();
-      setEvents(data);
+      if (data.success) {
+        setEvents(data.data);
+      } else {
+        throw new Error(data.message || 'Failed to fetch events');
+      }
     } catch (error) {
       console.error('Error fetching events:', error);
-      setError('Failed to load your events. Please try again.');
+      setError('Failed to load events. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -61,9 +66,16 @@ const MyEvents = () => {
   };
 
   const getPriorityBadge = (priority) => {
+    if (!priority) return null;
+
     return (
       <span className={`priority-badge ${priority}`}>
-        {priority}
+        {priority === 'featured' && (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+          </svg>
+        )}
+        {priority.charAt(0).toUpperCase() + priority.slice(1)}
       </span>
     );
   };
@@ -243,7 +255,7 @@ const MyEvents = () => {
 
                   <div className="event-content">
                     <div className="event-header">
-                      <h3 className="event-title">{event.title}</h3>
+                      <h3 className="event-title">{event.eventName}</h3>
                       {getPriorityBadge(event.priority)}
                     </div>
 
@@ -267,13 +279,13 @@ const MyEvents = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span>{event.location}</span>
+                        <span>{event.address}</span>
                       </div>
                     </div>
 
                     <div className="event-category">
                       <span className={`category-badge ${event.category.toLowerCase().replace(/\s+/g, '-')}`}>
-                        {event.category}
+                        {event.category.charAt(0).toUpperCase() + event.category.slice(1).replace('-', ' ')}
                       </span>
                     </div>
 
@@ -313,7 +325,7 @@ const MyEvents = () => {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>{selectedEvent.title}</h2>
+              <h2>{selectedEvent.eventName}</h2>
               <button className="modal-close" onClick={closeModal}>×</button>
             </div>
 
@@ -332,7 +344,7 @@ const MyEvents = () => {
                 <div className="detail-item">
                   <strong>Category:</strong>
                   <span className={`category-badge ${selectedEvent.category.toLowerCase().replace(/\s+/g, '-')}`}>
-                    {selectedEvent.category}
+                    {selectedEvent.category.charAt(0).toUpperCase() + selectedEvent.category.slice(1).replace('-', ' ')}
                   </span>
                 </div>
 
@@ -348,12 +360,7 @@ const MyEvents = () => {
 
                 <div className="detail-item">
                   <strong>Location:</strong>
-                  <span>{selectedEvent.location}</span>
-                </div>
-
-                <div className="detail-item">
-                  <strong>Expected Attendees:</strong>
-                  <span>{selectedEvent.expectedAttendees}</span>
+                  <span>{selectedEvent.address}</span>
                 </div>
 
                 <div className="detail-item full-width">
@@ -370,7 +377,7 @@ const MyEvents = () => {
 
                 <div className="detail-item full-width">
                   <strong>Submitted:</strong>
-                  <span>{formatDate(selectedEvent.createdAt)}</span>
+                  <span>{formatDate(selectedEvent.submittedAt)}</span>
                 </div>
               </div>
             </div>

@@ -45,8 +45,17 @@ const eventSchema = new mongoose.Schema({
   },
   priority: {
     type: String,
-    enum: ['recommended', 'featured'],
-    default: 'recommended'
+    enum: {
+      values: ['recommended', 'featured'],
+      message: 'Priority must be either "recommended" or "featured"'
+    },
+    default: null,
+    validate: {
+      validator: function (value) {
+        return value === null || value === 'recommended' || value === 'featured';
+      },
+      message: 'Priority must be null, "recommended", or "featured"'
+    }
   },
   submittedAt: {
     type: Date,

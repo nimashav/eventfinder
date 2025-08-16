@@ -4,9 +4,15 @@ import './EventReviewModal.css';
 const EventReviewModal = ({ event, onClose, onApprove, onReject, isSubmitting }) => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
+  const [showApprovalForm, setShowApprovalForm] = useState(false);
+  const [selectedPriority, setSelectedPriority] = useState('recommended');
 
   const handleApprove = () => {
-    onApprove(event._id);
+    if (!selectedPriority) {
+      alert('Please select a priority for this event');
+      return;
+    }
+    onApprove(event._id, selectedPriority);
   };
 
   const handleReject = () => {
@@ -15,6 +21,13 @@ const EventReviewModal = ({ event, onClose, onApprove, onReject, isSubmitting })
       return;
     }
     onReject(event._id, rejectionReason);
+  };
+
+  const resetForms = () => {
+    setShowRejectForm(false);
+    setShowApprovalForm(false);
+    setRejectionReason('');
+    setSelectedPriority('recommended');
   };
 
   const formatDate = (dateString) => {
@@ -106,8 +119,8 @@ const EventReviewModal = ({ event, onClose, onApprove, onReject, isSubmitting })
                 </div>
                 <div className="detail-item">
                   <label>Priority:</label>
-                  <span className={`priority-badge ${event.priority}`}>
-                    {event.priority.charAt(0).toUpperCase() + event.priority.slice(1)}
+                  <span className={`priority-badge ${event.priority || 'none'}`}>
+                    {event.priority ? event.priority.charAt(0).toUpperCase() + event.priority.slice(1) : 'Not Set'}
                   </span>
                 </div>
                 <div className="detail-item">
@@ -127,6 +140,54 @@ const EventReviewModal = ({ event, onClose, onApprove, onReject, isSubmitting })
               )}
             </div>
           </div>
+
+          {/* Approval Form */}
+          {showApprovalForm && (
+            <div className="approval-form">
+              <h3>Set Event Priority</h3>
+              <p>Choose the priority level for this event when it gets approved:</p>
+              <div className="priority-selection">
+                <label className="priority-option">
+                  <input
+                    type="radio"
+                    name="priority"
+                    value="recommended"
+                    checked={selectedPriority === 'recommended'}
+                    onChange={(e) => setSelectedPriority(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                  <div className="priority-card recommended">
+                    <div className="priority-header">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.563.563 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+                      </svg>
+                      <h4>Recommended</h4>
+                    </div>
+                    <p>Regular event that will appear in standard listings and search results.</p>
+                  </div>
+                </label>
+                <label className="priority-option">
+                  <input
+                    type="radio"
+                    name="priority"
+                    value="featured"
+                    checked={selectedPriority === 'featured'}
+                    onChange={(e) => setSelectedPriority(e.target.value)}
+                    disabled={isSubmitting}
+                  />
+                  <div className="priority-card featured">
+                    <div className="priority-header">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                      </svg>
+                      <h4>Featured</h4>
+                    </div>
+                    <p>High-priority event that will be prominently displayed in featured sections and homepage.</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
 
           {/* Rejection Form */}
           {showRejectForm && (
@@ -152,7 +213,7 @@ const EventReviewModal = ({ event, onClose, onApprove, onReject, isSubmitting })
             Cancel
           </button>
 
-          {!showRejectForm ? (
+          {!showRejectForm && !showApprovalForm ? (
             <>
               <button
                 className="btn-reject"
@@ -163,20 +224,34 @@ const EventReviewModal = ({ event, onClose, onApprove, onReject, isSubmitting })
               </button>
               <button
                 className="btn-approve"
-                onClick={handleApprove}
+                onClick={() => setShowApprovalForm(true)}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Approving...' : 'Approve Event'}
+                Approve Event
+              </button>
+            </>
+          ) : showApprovalForm ? (
+            <>
+              <button
+                className="btn-secondary"
+                onClick={resetForms}
+                disabled={isSubmitting}
+              >
+                Back
+              </button>
+              <button
+                className="btn-approve"
+                onClick={handleApprove}
+                disabled={isSubmitting || !selectedPriority}
+              >
+                {isSubmitting ? 'Approving...' : 'Confirm Approval'}
               </button>
             </>
           ) : (
             <>
               <button
                 className="btn-secondary"
-                onClick={() => {
-                  setShowRejectForm(false);
-                  setRejectionReason('');
-                }}
+                onClick={resetForms}
                 disabled={isSubmitting}
               >
                 Back

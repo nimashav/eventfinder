@@ -5,15 +5,22 @@ const router = express.Router();
 // GET all events (with status filtering)
 router.get('/', async (req, res) => {
   try {
-    const { status, category } = req.query;
+    const { status, category, priority, limit } = req.query;
     let filter = {};
 
     if (status) filter.status = status;
     if (category) filter.category = category;
+    if (priority) filter.priority = priority;
 
-    const events = await Event.find(filter)
-      .sort({ submittedAt: -1 }) // Most recent first
+    let query = Event.find(filter)
+      .sort({ priority: -1, submittedAt: -1 }) // Featured events first, then by submission date
       .select('-__v'); // Exclude version field
+
+    if (limit) {
+      query = query.limit(parseInt(limit));
+    }
+
+    const events = await query;
 
     res.json({
       success: true,
@@ -121,12 +128,28 @@ router.post('/', async (req, res) => {
 // PUT update event status (admin only)
 router.put('/:id/status', async (req, res) => {
   try {
-    const { status, reviewedBy, rejectionReason } = req.body;
+    const { status, reviewedBy, rejectionReason, priority } = req.body;
 
     if (!['approved', 'rejected', 'pending'].includes(status)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid status. Must be: approved, rejected, or pending'
+      });
+    }
+
+    // If approving, priority is required
+    if (status === 'approved' && !priority) {
+      return res.status(400).json({
+        success: false,
+        message: 'Priority is required when approving an event. Must be: recommended or featured'
+      });
+    }
+
+    // Validate priority if provided
+    if (priority && !['recommended', 'featured'].includes(priority)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid priority. Must be: recommended or featured'
       });
     }
 
@@ -136,8 +159,15 @@ router.put('/:id/status', async (req, res) => {
       reviewedBy: reviewedBy || 'Admin'
     };
 
-    if (status === 'rejected' && rejectionReason) {
-      updateData.rejectionReason = rejectionReason;
+    // Set priority only for approved events
+    if (status === 'approved') {
+      updateData.priority = priority;
+    } else if (status === 'rejected') {
+      // Clear priority for rejected events and set rejection reason
+      updateData.priority = null;
+      if (rejectionReason) {
+        updateData.rejectionReason = rejectionReason;
+      }
     }
 
     const event = await Event.findByIdAndUpdate(
