@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import './styles/globals.css';
-import LandingPage from './pages/LandingPage/LandingPage';
-import AddEvent from './pages/AddEvent/AddEvent';
-import AdminDashboard from './pages/Admin/AdminDashboard';
-import ApprovedEvents from './pages/Admin/ApprovedEvents';
-import UserManagement from './pages/Admin/UserManagement';
+import LandingPage from './pages/LandingPage/LandingPage.jsx';
+import AddEvent from './pages/AddEvent/AddEvent.jsx';
+import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
+import ApprovedEvents from './pages/Admin/ApprovedEvents.jsx';
+import UserManagement from './pages/Admin/UserManagement.jsx';
 
 function App() {
   return (

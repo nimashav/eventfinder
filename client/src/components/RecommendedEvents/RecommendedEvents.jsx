@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './RecommendedEvents.css';
-import EventDetailsModal from '../EventDetailsModal/EventDetailsModal';
+import EventDetailsModal from '../EventDetailsModal/EventDetailsModal.jsx';
 
 const RecommendedEvents = () => {
   // Modal state
