@@ -115,7 +115,7 @@ const ApprovedEventModal = ({ event, onClose, onUpdatePriority, onDelete, isSubm
                   </svg>
                   Location:
                 </span>
-                <span className="value">{event.location || 'Not specified'}</span>
+                <span className="value">{event.address || 'Not specified'}</span>
               </div>
 
               <div className="detail-row">

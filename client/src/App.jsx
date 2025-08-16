@@ -20,6 +20,7 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/approved" element={<ApprovedEvents />} />
+          <Route path="/admin/approved-events" element={<ApprovedEvents />} />
           <Route path="/admin/pending" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<UserManagement />} />
           {/* Additional routes can be added here as the app expands */}

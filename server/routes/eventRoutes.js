@@ -39,9 +39,41 @@ router.get('/', async (req, res) => {
 // GET approved events (specific route before /:id)
 router.get('/approved', async (req, res) => {
   try {
-    const approvedEvents = await Event.find({ status: 'approved' }).sort({ createdAt: -1 });
+    const { category, priority, search, limit } = req.query;
+    let filter = { status: 'approved' };
+
+    if (category) filter.category = category;
+    if (priority) filter.priority = priority;
+
+    let query = Event.find(filter);
+
+    // Add search functionality
+    if (search) {
+      query = query.where({
+        $or: [
+          { eventName: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { 'organizer.name': { $regex: search, $options: 'i' } }
+        ]
+      });
+    }
+
+    // Sort by priority (featured first) then by date
+    query = query.sort({
+      priority: -1, // featured events first 
+      date: 1, // upcoming events first
+      createdAt: -1 // newest first
+    });
+
+    if (limit) {
+      query = query.limit(parseInt(limit));
+    }
+
+    const approvedEvents = await query;
+
     res.json({
       success: true,
+      count: approvedEvents.length,
       data: approvedEvents
     });
   } catch (error) {
@@ -318,6 +350,65 @@ router.get('/admin/stats', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch statistics',
+      error: error.message
+    });
+  }
+});
+
+// GET approved events statistics
+router.get('/admin/approved-stats', async (req, res) => {
+  try {
+    // Get basic counts
+    const totalApproved = await Event.countDocuments({ status: 'approved' });
+    const featuredCount = await Event.countDocuments({ status: 'approved', priority: 'featured' });
+    const recommendedCount = await Event.countDocuments({ status: 'approved', priority: 'recommended' });
+
+    // Get upcoming events (events with date in the future)
+    const upcomingCount = await Event.countDocuments({
+      status: 'approved',
+      date: { $gte: new Date() }
+    });
+
+    // Get category breakdown
+    const categoryStats = await Event.aggregate([
+      { $match: { status: 'approved' } },
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    // Get priority breakdown
+    const priorityStats = await Event.aggregate([
+      { $match: { status: 'approved' } },
+      {
+        $group: {
+          _id: '$priority',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const result = {
+      total: totalApproved,
+      upcoming: upcomingCount,
+      featured: featuredCount,
+      recommended: recommendedCount,
+      categories: categoryStats,
+      priorities: priorityStats
+    };
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch approved events statistics',
       error: error.message
     });
   }
