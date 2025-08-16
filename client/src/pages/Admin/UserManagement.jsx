@@ -104,7 +104,7 @@ const UserManagement = () => {
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      user.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = selectedRole === '' || user.role === selectedRole;
     return matchesSearch && matchesRole;
   });
@@ -298,7 +298,7 @@ const UserManagement = () => {
 
                 {/* Pagination */}
                 <div className="pagination">
-                  <button 
+                  <button
                     className="pagination-btn"
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
@@ -308,7 +308,7 @@ const UserManagement = () => {
                   <span className="pagination-info">
                     {currentPage} of {totalPages}
                   </span>
-                  <button 
+                  <button
                     className="pagination-btn"
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}

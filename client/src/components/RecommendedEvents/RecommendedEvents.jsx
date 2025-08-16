@@ -174,7 +174,7 @@ const RecommendedEvents = () => {
           <h2>Recommended Events</h2>
           <p>Hand-picked events we think you'll love, based on popular trends.</p>
         </div>
-        
+
         <div className="event-grid">
           {recommendedEvents.map(event => (
             <div key={event.id} className="event-card">
@@ -201,7 +201,7 @@ const RecommendedEvents = () => {
                 </div>
                 <div className="event-footer">
                   <span className="event-price">{event.price}</span>
-                  <button 
+                  <button
                     onClick={() => openModal(event)}
                     className="view-details"
                   >
@@ -221,8 +221,8 @@ const RecommendedEvents = () => {
 
         {/* Event Details Modal */}
         {isModalOpen && (
-          <EventDetailsModal 
-            event={selectedEvent} 
+          <EventDetailsModal
+            event={selectedEvent}
             onClose={closeModal}
           />
         )}

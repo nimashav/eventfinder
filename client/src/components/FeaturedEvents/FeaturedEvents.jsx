@@ -100,7 +100,7 @@ const FeaturedEvents = () => {
           <h2>Featured Events</h2>
           <p>Explore the most popular and highly anticipated events happening soon.</p>
         </div>
-        
+
         <div className="event-cards">
           {featuredEvents.map(event => (
             <div key={event.id} className="event-card">
@@ -127,7 +127,7 @@ const FeaturedEvents = () => {
                 </div>
                 <div className="event-footer">
                   <span className="event-price">{event.price}</span>
-                  <button 
+                  <button
                     onClick={() => openModal(event)}
                     className="view-details"
                   >
@@ -139,11 +139,11 @@ const FeaturedEvents = () => {
           ))}
         </div>
       </div>
-      
+
       {/* Event Details Modal */}
       {isModalOpen && (
-        <EventDetailsModal 
-          event={selectedEvent} 
+        <EventDetailsModal
+          event={selectedEvent}
           onClose={closeModal}
         />
       )}

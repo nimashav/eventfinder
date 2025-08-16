@@ -113,7 +113,7 @@ const ApprovedEvents = () => {
 
   const filteredEvents = approvedEvents.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         event.organizer.toLowerCase().includes(searchQuery.toLowerCase());
+      event.organizer.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === '' || event.category === selectedCategory;
     const matchesStatus = selectedStatus === '' || event.status === selectedStatus;
     return matchesSearch && matchesCategory && matchesStatus;
@@ -368,7 +368,7 @@ const ApprovedEvents = () => {
 
                 {/* Pagination */}
                 <div className="pagination">
-                  <button 
+                  <button
                     className="pagination-btn"
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -378,7 +378,7 @@ const ApprovedEvents = () => {
                   <span className="pagination-info">
                     Showing {startIndex + 1} to {Math.min(startIndex + eventsPerPage, filteredEvents.length)} of {filteredEvents.length} events
                   </span>
-                  <button 
+                  <button
                     className="pagination-btn"
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
