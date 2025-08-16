@@ -1,0 +1,18 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"args": [
+				"start"
+			],
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"label": "Start EventWave Client",
+			"isBackground": true,
+			"type": "shell",
+			"command": "npm",
+			"group": "build"
+		}
+	]
+}

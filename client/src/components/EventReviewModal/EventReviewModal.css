@@ -1,0 +1,439 @@
+/* Event Review Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.event-review-modal {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 30px;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #921A40 0%, #C75B7A 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-close svg {
+  width: 20px;
+  height: 20px;
+}
+
+.modal-content {
+  padding: 30px;
+}
+
+.event-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+.detail-group {
+  margin-bottom: 30px;
+}
+
+.detail-group h3 {
+  color: #921A40;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #f3f4f6;
+  padding-bottom: 8px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.detail-item label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-item span {
+  color: #1f2937;
+  font-size: 1rem;
+}
+
+.description-text {
+  color: #1f2937;
+  line-height: 1.6;
+  margin: 0;
+  background: #f9fafb;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 3px solid #921A40;
+}
+
+.category-badge, .status-badge, .priority-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.category-badge.music { background-color: #ddd6fe; color: #7c3aed; }
+.category-badge.art-culture { background-color: #fce7f3; color: #be185d; }
+.category-badge.tech-innovation { background-color: #dbeafe; color: #1d4ed8; }
+.category-badge.sports { background-color: #dcfce7; color: #16a34a; }
+.category-badge.food-drink { background-color: #fed7aa; color: #ea580c; }
+.category-badge.business { background-color: #e5e7eb; color: #374151; }
+.category-badge.education { background-color: #fef3c7; color: #d97706; }
+.category-badge.health { background-color: #bbf7d0; color: #059669; }
+.category-badge.other { background-color: #f3f4f6; color: #6b7280; }
+
+.status-badge.pending { background-color: #fef3c7; color: #d97706; }
+.status-badge.approved { background-color: #dcfce7; color: #16a34a; }
+.status-badge.rejected { background-color: #fee2e2; color: #dc2626; }
+
+.priority-badge.none { background-color: #f3f4f6; color: #6b7280; }
+.priority-badge.recommended { background-color: #f0f9ff; color: #0284c7; }
+.priority-badge.featured { background-color: #fef3c7; color: #d97706; }
+
+.event-image {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.event-image img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.rejection-form {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.rejection-form h3 {
+  color: #dc2626;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.rejection-form textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.rejection-form textarea:focus {
+  outline: none;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 30px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 0 0 12px 12px;
+}
+
+.modal-actions button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-size: 0.875rem;
+}
+
+.btn-cancel {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #4b5563;
+}
+
+.btn-approve {
+  background: #16a34a;
+  color: white;
+}
+
+.btn-approve:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.btn-reject {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-reject:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.modal-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Approval Form */
+.approval-form {
+  background-color: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 24px;
+  margin-top: 20px;
+}
+
+.approval-form h3 {
+  margin: 0 0 8px 0;
+  color: #0c4a6e;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.approval-form p {
+  margin: 0 0 20px 0;
+  color: #075985;
+  font-size: 0.9rem;
+}
+
+.priority-selection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.priority-option {
+  cursor: pointer;
+  display: block;
+}
+
+.priority-option input[type="radio"] {
+  display: none;
+}
+
+.priority-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.2s;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.priority-card:hover {
+  border-color: #921A40;
+  box-shadow: 0 2px 8px rgba(146, 26, 64, 0.1);
+}
+
+.priority-option input[type="radio"]:checked + .priority-card {
+  border-color: #921A40;
+  background-color: #fef7f7;
+  box-shadow: 0 2px 8px rgba(146, 26, 64, 0.15);
+}
+
+.priority-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.priority-header svg {
+  width: 24px;
+  height: 24px;
+  color: #921A40;
+}
+
+.priority-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.priority-card p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.priority-card.recommended .priority-header svg {
+  color: #2563eb;
+}
+
+.priority-card.featured .priority-header svg {
+  color: #dc2626;
+}
+
+.priority-option input[type="radio"]:checked + .priority-card.recommended {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.priority-option input[type="radio"]:checked + .priority-card.featured {
+  border-color: #dc2626;
+  background-color: #fef2f2;
+}
+
+/* Rejection Form */
+.rejection-form {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 24px;
+  margin-top: 20px;
+}
+
+.rejection-form h3 {
+  margin: 0 0 16px 0;
+  color: #dc2626;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.rejection-form textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.rejection-form textarea:focus {
+  outline: none;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.rejection-form textarea:disabled {
+  background-color: #f9fafb;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 10px;
+  }
+
+  .event-review-modal {
+    max-width: 100%;
+  }
+
+  .event-details-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .priority-selection {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .modal-header,
+  .modal-content,
+  .modal-actions {
+    padding: 20px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+
+  .approval-form,
+  .rejection-form {
+    padding: 16px;
+    margin-top: 16px;
+  }
+}
