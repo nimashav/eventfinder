@@ -45,8 +45,8 @@ const eventSchema = new mongoose.Schema({
   },
   priority: {
     type: String,
-    enum: ['low', 'medium', 'high'],
-    default: 'medium'
+    enum: ['recommended', 'featured'],
+    default: 'recommended'
   },
   submittedAt: {
     type: Date,

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AdminHeader from '../../components/AdminHeader/AdminHeader.jsx';
 import AdminSidebar from '../../components/AdminSidebar/AdminSidebar.jsx';
+import EventReviewModal from '../../components/EventReviewModal/EventReviewModal.jsx';
 import './AdminBase.css';
 import './AdminDashboard.css';
 
@@ -9,116 +10,134 @@ const AdminDashboard = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedPriority, setSelectedPriority] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [pendingEvents, setPendingEvents] = useState([]);
+  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0, total: 0 });
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState({ type: '', text: '' });
 
-  // Sample data for pending events
-  const pendingEvents = [
-    {
-      id: 1,
-      title: 'Annual Tech Conference',
-      date: '2024-08-15',
-      location: 'Virtual',
-      category: 'Conference',
-      organizer: 'John Doe',
-      status: 'pending',
-      priority: 'high'
-    },
-    {
-      id: 2,
-      title: 'Data Science Workshop',
-      date: '2024-08-01',
-      location: 'New York',
-      category: 'Workshop',
-      organizer: 'Jane Smith',
-      status: 'pending',
-      priority: 'medium'
-    },
-    {
-      id: 3,
-      title: 'Future of AI Webinar',
-      date: '2024-09-10',
-      location: 'Online',
-      category: 'Webinar',
-      organizer: 'Mike Johnson',
-      status: 'pending',
-      priority: 'low'
-    },
-    {
-      id: 4,
-      title: 'Leadership Summit',
-      date: '2024-09-22',
-      location: 'London',
-      category: 'Seminar',
-      organizer: 'Sarah Wilson',
-      status: 'pending',
-      priority: 'high'
-    },
-    {
-      id: 5,
-      title: 'Community Hackathon',
-      date: '2024-10-05',
-      location: 'San Francisco',
-      category: 'Community',
-      organizer: 'David Brown',
-      status: 'pending',
-      priority: 'medium'
+  // Fetch pending events from backend
+  const fetchPendingEvents = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/events?status=pending');
+      const result = await response.json();
+
+      if (result.success) {
+        setPendingEvents(result.data);
+      } else {
+        setMessage({ type: 'error', text: 'Failed to fetch pending events' });
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      setMessage({ type: 'error', text: 'Network error while fetching events' });
     }
-  ];
-
-  // Recent activity data
-  const recentActivity = [
-    {
-      id: 1,
-      title: 'Employee Onboarding Session',
-      status: 'Approved',
-      time: '2 hours ago',
-      type: 'approval'
-    },
-    {
-      id: 2,
-      title: 'Q3 Financial Review Meeting',
-      status: 'Rejected',
-      time: 'Yesterday',
-      type: 'rejection'
-    },
-    {
-      id: 3,
-      title: 'Client Pitch Presentation',
-      status: 'Approved',
-      time: '2 days ago',
-      type: 'approval'
-    },
-    {
-      id: 4,
-      title: 'Team Building Workshop',
-      status: 'Approved',
-      time: '3 days ago',
-      type: 'approval'
-    },
-    {
-      id: 5,
-      title: 'Annual Security Audit',
-      status: 'Rejected',
-      time: '3 days ago',
-      type: 'rejection'
-    }
-  ];
-
-  const handleApprove = (eventId) => {
-    console.log('Approving event:', eventId);
-    // Handle approval logic here
   };
 
-  const handleReject = (eventId) => {
-    console.log('Rejecting event:', eventId);
-    // Handle rejection logic here
+  // Fetch stats from backend
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/events/admin/stats');
+      const result = await response.json();
+
+      if (result.success) {
+        setStats(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchPendingEvents(), fetchStats()]);
+      setLoading(false);
+    };
+
+    loadData();
+  }, []);
+
+  const handleViewDetails = (event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleApprove = async (eventId) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`http://localhost:5001/api/events/${eventId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'approved',
+          reviewedBy: 'Admin', // In real app, this would be the logged-in admin
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setMessage({ type: 'success', text: 'Event approved successfully!' });
+        setIsModalOpen(false);
+        // Refresh data
+        await Promise.all([fetchPendingEvents(), fetchStats()]);
+      } else {
+        setMessage({ type: 'error', text: result.message || 'Failed to approve event' });
+      }
+    } catch (error) {
+      console.error('Error approving event:', error);
+      setMessage({ type: 'error', text: 'Network error while approving event' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReject = async (eventId, rejectionReason) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`http://localhost:5001/api/events/${eventId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'rejected',
+          reviewedBy: 'Admin', // In real app, this would be the logged-in admin
+          rejectionReason: rejectionReason,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setMessage({ type: 'success', text: 'Event rejected successfully!' });
+        setIsModalOpen(false);
+        // Refresh data
+        await Promise.all([fetchPendingEvents(), fetchStats()]);
+      } else {
+        setMessage({ type: 'error', text: result.message || 'Failed to reject event' });
+      }
+    } catch (error) {
+      console.error('Error rejecting event:', error);
+      setMessage({ type: 'error', text: 'Network error while rejecting event' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const filteredEvents = pendingEvents.filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = event.eventName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === '' || event.category === selectedCategory;
     const matchesPriority = selectedPriority === '' || event.priority === selectedPriority;
     return matchesSearch && matchesCategory && matchesPriority;
   });
+
+  // Calculate priority stats
+  const highPriorityCount = pendingEvents.filter(event => event.priority === 'high').length;
 
   return (
     <div className="admin-page admin-dashboard">
@@ -127,12 +146,20 @@ const AdminDashboard = () => {
 
       <div className="admin-dashboard-container">
         <div className="container">
+          {/* Message Display */}
+          {message.text && (
+            <div className={`admin-message ${message.type}`}>
+              <p>{message.text}</p>
+              <button onClick={() => setMessage({ type: '', text: '' })}>×</button>
+            </div>
+          )}
+
           <div className="admin-dashboard-layout">
             {/* Sidebar */}
             <AdminSidebar />
 
             {/* Main Content */}
-            <main className="admin-main-content main-content">{/* Keep both classes for specific styles */}
+            <main className="admin-main-content main-content">
               <div className="admin-content-header content-header">
                 <h2>Pending Events Overview</h2>
                 <p>Review and manage all event requests awaiting your approval.</p>
@@ -148,7 +175,7 @@ const AdminDashboard = () => {
                   </div>
                   <div className="stat-content">
                     <h3>Total Pending Events</h3>
-                    <span className="stat-number">10</span>
+                    <span className="stat-number">{stats.pending}</span>
                     <p>Events awaiting review and action</p>
                   </div>
                 </div>
@@ -161,7 +188,7 @@ const AdminDashboard = () => {
                   </div>
                   <div className="stat-content">
                     <h3>High Priority Events</h3>
-                    <span className="stat-number">3</span>
+                    <span className="stat-number">{highPriorityCount}</span>
                     <p>Urgent events requiring immediate attention</p>
                   </div>
                 </div>
@@ -173,9 +200,9 @@ const AdminDashboard = () => {
                     </svg>
                   </div>
                   <div className="stat-content">
-                    <h3>Requires Further Review</h3>
-                    <span className="stat-number">4</span>
-                    <p>Events that need detailed examination</p>
+                    <h3>Total Approved</h3>
+                    <span className="stat-number">{stats.approved}</span>
+                    <p>Events approved and published</p>
                   </div>
                 </div>
               </div>
@@ -201,19 +228,23 @@ const AdminDashboard = () => {
                       onChange={(e) => setSelectedCategory(e.target.value)}
                       className="filter-select"
                     >
-                      <option value="">Category</option>
-                      <option value="Conference">Conference</option>
-                      <option value="Workshop">Workshop</option>
-                      <option value="Webinar">Webinar</option>
-                      <option value="Seminar">Seminar</option>
-                      <option value="Community">Community</option>
+                      <option value="">All Categories</option>
+                      <option value="music">Music</option>
+                      <option value="art-culture">Art & Culture</option>
+                      <option value="tech-innovation">Tech & Innovation</option>
+                      <option value="sports">Sports</option>
+                      <option value="food-drink">Food & Drink</option>
+                      <option value="business">Business</option>
+                      <option value="education">Education</option>
+                      <option value="health">Health & Wellness</option>
+                      <option value="other">Other</option>
                     </select>
                     <select
                       value={selectedPriority}
                       onChange={(e) => setSelectedPriority(e.target.value)}
                       className="filter-select"
                     >
-                      <option value="">Priority</option>
+                      <option value="">All Priorities</option>
                       <option value="high">High</option>
                       <option value="medium">Medium</option>
                       <option value="low">Low</option>
@@ -221,147 +252,165 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-                <div className="events-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Event Name</th>
-                        <th>Date</th>
-                        <th>Location</th>
-                        <th>Category</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredEvents.map(event => (
-                        <tr key={event.id}>
-                          <td>
-                            <div className="event-info">
-                              <div className="event-avatar">
-                                <img src={`https://via.placeholder.com/40x40`} alt="Event" />
-                              </div>
-                              <div className="event-details">
-                                <span className="event-title">{event.title}</span>
-                                <span className="event-organizer">{event.organizer}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <span className="event-date">
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                              </svg>
-                              {new Date(event.date).toLocaleDateString()}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="event-location">
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                              </svg>
-                              {event.location}
-                            </span>
-                          </td>
-                          <td>
-                            <span className={`category-badge ${event.category.toLowerCase()}`}>
-                              {event.category}
-                            </span>
-                          </td>
-                          <td>
-                            <div className="action-buttons">
-                              <button
-                                className="btn-approve"
-                                onClick={() => handleApprove(event.id)}
-                              >
-                                Approve
-                              </button>
-                              <button
-                                className="btn-reject"
-                                onClick={() => handleReject(event.id)}
-                              >
-                                Reject
-                              </button>
-                            </div>
-                          </td>
+                {loading ? (
+                  <div className="loading-state">
+                    <div className="loading-spinner"></div>
+                    <p>Loading pending events...</p>
+                  </div>
+                ) : (
+                  <div className="events-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Event Name</th>
+                          <th>Date</th>
+                          <th>Location</th>
+                          <th>Category</th>
+                          <th>Priority</th>
+                          <th>Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination */}
-                <div className="pagination">
-                  <button className="pagination-btn">Previous</button>
-                  <span className="pagination-info">Page 1 of 2</span>
-                  <button className="pagination-btn">Next</button>
-                </div>
+                      </thead>
+                      <tbody>
+                        {filteredEvents.length > 0 ? (
+                          filteredEvents.map(event => (
+                            <tr key={event._id}>
+                              <td>
+                                <div className="event-info">
+                                  <div className="event-avatar">
+                                    {event.image ? (
+                                      <img src={`/images/${event.image}`} alt="Event" />
+                                    ) : (
+                                      <div className="event-placeholder">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                        </svg>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="event-details">
+                                    <span className="event-title">{event.eventName}</span>
+                                    <span className="event-organizer">{event.organizer?.name || 'Anonymous'}</span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <span className="event-date">
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                  </svg>
+                                  {new Date(event.date).toLocaleDateString()}
+                                </span>
+                              </td>
+                              <td>
+                                <span className="event-location">
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                                  </svg>
+                                  {event.address}
+                                </span>
+                              </td>
+                              <td>
+                                <span className={`category-badge ${event.category}`}>
+                                  {event.category.charAt(0).toUpperCase() + event.category.slice(1).replace('-', ' ')}
+                                </span>
+                              </td>
+                              <td>
+                                <span className={`priority-badge ${event.priority}`}>
+                                  {event.priority.charAt(0).toUpperCase() + event.priority.slice(1)}
+                                </span>
+                              </td>
+                              <td>
+                                <div className="action-buttons">
+                                  <button
+                                    className="btn-view"
+                                    onClick={() => handleViewDetails(event)}
+                                  >
+                                    View Details
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="6" className="no-events">
+                              <div className="no-events-message">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                </svg>
+                                <h4>No pending events found</h4>
+                                <p>All events have been reviewed or no events match your filters.</p>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </main>
 
-            {/* Right Sidebar */}
+            {/* Right Sidebar with Recent Activity */}
             <aside className="admin-right-sidebar right-sidebar">
               <div className="admin-sidebar-section sidebar-section">
-                <h3>Recent Event Activity</h3>
-                <div className="activity-list">
-                  {recentActivity.map(activity => (
-                    <div key={activity.id} className="activity-item">
-                      <div className="activity-avatar">
-                        <img src="https://via.placeholder.com/32x32" alt="User" />
-                      </div>
-                      <div className="activity-content">
-                        <div className="activity-title">{activity.title}</div>
-                        <div className={`activity-status ${activity.type}`}>
-                          {activity.status}
-                        </div>
-                        <div className="activity-time">{activity.time}</div>
-                      </div>
-                    </div>
-                  ))}
+                <h3>Quick Stats</h3>
+                <div className="quick-stats">
+                  <div className="quick-stat-item">
+                    <span className="stat-label">Total Events</span>
+                    <span className="stat-value">{stats.total}</span>
+                  </div>
+                  <div className="quick-stat-item">
+                    <span className="stat-label">Approved</span>
+                    <span className="stat-value approved">{stats.approved}</span>
+                  </div>
+                  <div className="quick-stat-item">
+                    <span className="stat-label">Rejected</span>
+                    <span className="stat-value rejected">{stats.rejected}</span>
+                  </div>
+                  <div className="quick-stat-item">
+                    <span className="stat-label">Pending</span>
+                    <span className="stat-value pending">{stats.pending}</span>
+                  </div>
                 </div>
               </div>
 
               <div className="admin-sidebar-section sidebar-section">
-                <h3>Event Categories Overview</h3>
-                <p>Distribution of pending events by category</p>
-                <div className="category-chart">
-                  <div className="donut-chart">
-                    <svg width="120" height="120" viewBox="0 0 120 120">
-                      <circle cx="60" cy="60" r="50" fill="none" stroke="#e0e0e0" strokeWidth="10" />
-                      <circle cx="60" cy="60" r="50" fill="none" stroke="#921A40" strokeWidth="10" strokeDasharray="94 314" strokeDashoffset="25" />
-                      <circle cx="60" cy="60" r="50" fill="none" stroke="#C75B7A" strokeWidth="10" strokeDasharray="63 314" strokeDashoffset="-69" />
-                      <circle cx="60" cy="60" r="50" fill="none" stroke="#D9ABAB" strokeWidth="10" strokeDasharray="47 314" strokeDashoffset="-132" />
-                      <circle cx="60" cy="60" r="50" fill="none" stroke="#2D2D2D" strokeWidth="10" strokeDasharray="110 314" strokeDashoffset="-179" />
+                <h3>Admin Actions</h3>
+                <div className="admin-actions">
+                  <Link to="/admin/approved-events" className="admin-action-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <div className="chart-center">
-                      <span className="chart-total">24%</span>
-                      <span className="chart-label">Conference</span>
-                    </div>
-                  </div>
-                  <div className="chart-legend">
-                    <div className="legend-item">
-                      <span className="legend-color" style={{ backgroundColor: '#921A40' }}></span>
-                      <span>Conference</span>
-                    </div>
-                    <div className="legend-item">
-                      <span className="legend-color" style={{ backgroundColor: '#C75B7A' }}></span>
-                      <span>Workshop</span>
-                    </div>
-                    <div className="legend-item">
-                      <span className="legend-color" style={{ backgroundColor: '#D9ABAB' }}></span>
-                      <span>Webinar</span>
-                    </div>
-                    <div className="legend-item">
-                      <span className="legend-color" style={{ backgroundColor: '#2D2D2D' }}></span>
-                      <span>Community</span>
-                    </div>
-                  </div>
+                    View Approved Events
+                  </Link>
+                  <Link to="/admin/user-management" className="admin-action-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                    </svg>
+                    User Management
+                  </Link>
                 </div>
               </div>
             </aside>
           </div>
         </div>
       </div>
+
+      {/* Event Review Modal */}
+      {isModalOpen && selectedEvent && (
+        <EventReviewModal
+          event={selectedEvent}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedEvent(null);
+          }}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          isSubmitting={isSubmitting}
+        />
+      )}
     </div>
   );
 };

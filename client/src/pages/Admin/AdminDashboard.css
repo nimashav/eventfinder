@@ -6,6 +6,164 @@
   gap: 32px !important;
 }
 
+/* Message Display */
+.admin-message {
+  margin: 20px 0;
+  padding: 15px 20px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+}
+
+.admin-message.success {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.admin-message.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.admin-message button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 5px;
+  color: inherit;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #921A40;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Priority Badge */
+.priority-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.priority-badge.low {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.priority-badge.medium {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.priority-badge.high {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* Event placeholder for missing images */
+.event-placeholder {
+  width: 40px;
+  height: 40px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+.event-placeholder svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* No events state */
+.no-events {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.no-events-message {
+  color: #6b7280;
+}
+
+.no-events-message svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  color: #d1d5db;
+}
+
+.no-events-message h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.125rem;
+  color: #374151;
+}
+
+.no-events-message p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Action buttons update */
+.btn-view {
+  background: #921A40;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-view:hover {
+  background: #7e1735;
+  transform: translateY(-1px);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Dashboard specific overrides and additions */
 
 /* Stats Grid */

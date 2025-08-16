@@ -15,14 +15,14 @@ const Header = () => {
               </h1>
             </Link>
           </div>
-          
+
           <nav className="main-nav">
             <ul>
               <li><Link to="/browse-events">Browse Events</Link></li>
-              <li><Link to="/add-event">Add Event</Link></li>
+              <li><Link to="/add-event">My Events</Link></li>
             </ul>
           </nav>
-          
+
           <div className="header-actions">
             <Link to="/search" className="search-icon">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="icon">
