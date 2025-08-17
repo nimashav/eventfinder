@@ -8,7 +8,11 @@
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["events", "backend", "api"],
+  "keywords": [
+    "events",
+    "backend",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -17,6 +21,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^4.18.2",
-    "mongoose": "^8.17.1"
+    "mongoose": "^8.17.1",
+    "multer": "^2.0.2"
   }
 }

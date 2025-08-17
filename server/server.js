@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const path = require('path');
 
 dotenv.config();
 
@@ -17,6 +18,9 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' })); // For larger image uploads
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Request logging middleware
 app.use((req, res, next) => {

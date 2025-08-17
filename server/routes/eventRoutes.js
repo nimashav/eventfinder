@@ -1,6 +1,66 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
 const Event = require('../models/Event');
 const router = express.Router();
+
+// Configure multer for file upload
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/') // Files will be stored in uploads/ directory
+  },
+  filename: function (req, file, cb) {
+    // Generate unique filename with timestamp
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // Check if file is an image
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
+
+// POST upload image endpoint
+router.post('/upload-image', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file uploaded'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Image uploaded successfully',
+      data: {
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        url: `/uploads/${req.file.filename}`
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to upload image',
+      error: error.message
+    });
+  }
+});
 
 // GET all events (with status filtering)
 router.get('/', async (req, res) => {
@@ -154,6 +214,80 @@ router.post('/', async (req, res) => {
       success: true,
       message: 'Event submitted successfully! It will be reviewed by admin.',
       data: savedEvent
+    });
+  } catch (error) {
+    // Handle mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create event',
+      error: error.message
+    });
+  }
+});
+
+// POST create new event with image upload (multipart form data)
+router.post('/with-image', upload.single('image'), async (req, res) => {
+  try {
+    // Extract form data
+    const {
+      eventName,
+      description,
+      address,
+      date,
+      time,
+      category,
+      organizer
+    } = req.body;
+
+    // Parse organizer if it's a JSON string
+    let organizerData = { name: 'Anonymous' };
+    if (organizer) {
+      try {
+        organizerData = typeof organizer === 'string' ? JSON.parse(organizer) : organizer;
+      } catch (e) {
+        organizerData = { name: organizer };
+      }
+    }
+
+    // Validate required fields
+    if (!eventName || !description || !address || !date || !time || !category) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields',
+        required: ['eventName', 'description', 'address', 'date', 'time', 'category']
+      });
+    }
+
+    // Create new event with pending status
+    const newEvent = new Event({
+      eventName: eventName.trim(),
+      description: description.trim(),
+      address: address.trim(),
+      date: new Date(date),
+      time: time.trim(),
+      category,
+      image: req.file ? req.file.filename : null, // Store uploaded filename
+      organizer: organizerData,
+      status: 'pending' // Always pending when submitted
+    });
+
+    // Save to database
+    const savedEvent = await newEvent.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Event submitted successfully! It will be reviewed by admin.',
+      data: savedEvent,
+      imageUploaded: !!req.file
     });
   } catch (error) {
     // Handle mongoose validation errors

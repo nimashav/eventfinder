@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Test Image Upload</title>
+</head>
+
+<body>
+  <h1>Test Image Upload</h1>
+  <form id="uploadForm">
+    <input type="file" id="imageFile" accept="image/*" required>
+    <button type="submit">Upload Image</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById('imageFile');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert('Please select a file');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const response = await fetch('http://localhost:5001/api/events/upload-image', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+        document.getElementById('result').innerHTML = `
+                    <h3>Upload Result:</h3>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                    ${result.success ? `<img src="http://localhost:5001${result.data.url}" style="max-width: 300px;">` : ''}
+                `;
+      } catch (error) {
+        document.getElementById('result').innerHTML = `<p>Error: ${error.message}</p>`;
+      }
+    });
+  </script>
+</body>
+
+</html>

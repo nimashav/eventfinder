@@ -78,34 +78,33 @@ const AddEvent = () => {
     setSubmitMessage({ type: '', message: '' });
 
     try {
-      // Prepare form data for submission
-      const submitData = {
-        eventName: formData.eventName.trim(),
-        description: formData.description.trim(),
-        address: formData.address.trim(),
-        date: formData.date,
-        time: formData.time,
-        category: formData.category,
-        organizer: {
-          name: formData.organizer.name.trim() || 'Anonymous',
-          email: formData.organizer.email.trim(),
-          phone: formData.organizer.phone.trim()
-        }
-      };
+      // Create FormData for multipart upload
+      const formDataToSend = new FormData();
 
-      // For now, we'll just store the image name
-      // In a real app, you'd upload to a file service
+      // Append all form fields
+      formDataToSend.append('eventName', formData.eventName.trim());
+      formDataToSend.append('description', formData.description.trim());
+      formDataToSend.append('address', formData.address.trim());
+      formDataToSend.append('date', formData.date);
+      formDataToSend.append('time', formData.time);
+      formDataToSend.append('category', formData.category);
+
+      // Append organizer as JSON string
+      formDataToSend.append('organizer', JSON.stringify({
+        name: formData.organizer.name.trim() || 'Anonymous',
+        email: formData.organizer.email.trim(),
+        phone: formData.organizer.phone.trim()
+      }));
+
+      // Append image file if exists
       if (formData.image) {
-        submitData.image = formData.image.name;
+        formDataToSend.append('image', formData.image);
       }
 
-      // Send to backend
-      const response = await fetch('http://localhost:5001/api/events', {
+      // Send to backend using the new endpoint
+      const response = await fetch('http://localhost:5001/api/events/with-image', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submitData)
+        body: formDataToSend // Don't set Content-Type header, let browser set it
       });
 
       const result = await response.json();
