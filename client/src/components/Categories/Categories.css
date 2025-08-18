@@ -22,6 +22,11 @@
   font-weight: 600;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .category-button:hover {
@@ -30,14 +35,15 @@
   transform: translateY(-3px);
 }
 
+.category-button.active {
+  background-color: var(--primary);
+  color: var(--text-light);
+  transform: translateY(-2px);
+}
+
 .category-icon {
   margin-right: 8px;
   font-size: 1.2rem;
-}
-
-.category-button:first-child {
-  background-color: var(--primary);
-  color: var(--text-light);
 }
 
 @media (max-width: 768px) {

@@ -18,6 +18,12 @@
   order: 1;
 }
 
+.category-filter-badge {
+  font-size: 1.5rem;
+  color: var(--primary);
+  font-weight: 500;
+}
+
 .section-header p {
   color: #666;
   font-size: 1.1rem;
