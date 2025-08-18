@@ -135,7 +135,7 @@ const EventReviewModal = ({ event, onClose, onApprove, onReject, isSubmitting })
                   <h3>Event Image</h3>
                   <div className="event-image">
                     <img
-                      src={event.image.startsWith('http') ? event.image : `http://localhost:5001/uploads/${event.image}`}
+                      src={event.image.startsWith('http') ? event.image : `http://localhost:5002/uploads/${event.image}`}
                       alt={event.eventName}
                       onError={(e) => {
                         e.target.style.display = 'none';

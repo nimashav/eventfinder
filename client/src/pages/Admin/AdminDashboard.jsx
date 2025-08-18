@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import AdminHeader from '../../components/AdminHeader/AdminHeader.jsx';
 import AdminSidebar from '../../components/AdminSidebar/AdminSidebar.jsx';
 import EventReviewModal from '../../components/EventReviewModal/EventReviewModal.jsx';
@@ -7,6 +8,7 @@ import './AdminBase.css';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
+  const { user, token } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedPriority, setSelectedPriority] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,10 +19,18 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
 
+  // Create auth headers
+  const getAuthHeaders = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  });
+
   // Fetch pending events from backend
   const fetchPendingEvents = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/events?status=pending');
+      const response = await fetch('http://localhost:5002/api/events?status=pending', {
+        headers: getAuthHeaders()
+      });
       const result = await response.json();
 
       if (result.success) {
@@ -37,7 +47,9 @@ const AdminDashboard = () => {
   // Fetch stats from backend
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/events/admin/stats');
+      const response = await fetch('http://localhost:5002/api/events/admin/stats', {
+        headers: getAuthHeaders()
+      });
       const result = await response.json();
 
       if (result.success) {
@@ -66,15 +78,13 @@ const AdminDashboard = () => {
   const handleApprove = async (eventId, priority) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:5001/api/events/${eventId}/status`, {
+      const response = await fetch(`http://localhost:5002/api/events/${eventId}/status`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           status: 'approved',
           priority: priority,
-          reviewedBy: 'Admin', // In real app, this would be the logged-in admin
+          reviewedBy: user?.fullName || 'Admin',
         }),
       });
 
@@ -99,14 +109,12 @@ const AdminDashboard = () => {
   const handleReject = async (eventId, rejectionReason) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:5001/api/events/${eventId}/status`, {
+      const response = await fetch(`http://localhost:5002/api/events/${eventId}/status`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           status: 'rejected',
-          reviewedBy: 'Admin', // In real app, this would be the logged-in admin
+          reviewedBy: user?.fullName || 'Admin',
           rejectionReason: rejectionReason,
         }),
       });
@@ -281,8 +289,8 @@ const AdminDashboard = () => {
                                       <>
                                         <img
                                           src={event.image.startsWith('http') ? event.image :
-                                            event.image.startsWith('/uploads') ? `http://localhost:5001${event.image}` :
-                                              event.image.includes('.') ? `http://localhost:5001/uploads/${event.image}` :
+                                            event.image.startsWith('/uploads') ? `http://localhost:5002${event.image}` :
+                                              event.image.includes('.') ? `http://localhost:5002/uploads/${event.image}` :
                                                 `/images/${event.image}`}
                                           alt="Event"
                                           onError={(e) => {

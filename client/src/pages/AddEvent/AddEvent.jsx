@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import Header from '../../components/Header/Header.jsx';
 import Footer from '../../components/Footer/Footer.jsx';
 import './AddEvent.css';
 
 const AddEvent = () => {
   const navigate = useNavigate();
+  const { token, user } = useAuth();
+
   const [formData, setFormData] = useState({
     eventName: '',
     description: '',
@@ -15,9 +18,9 @@ const AddEvent = () => {
     category: '',
     image: null,
     organizer: {
-      name: '',
-      email: '',
-      phone: ''
+      name: user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || '',
+      email: user?.email || '',
+      phone: user?.phone || ''
     }
   });
 
@@ -74,6 +77,16 @@ const AddEvent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check if user is authenticated
+    if (!token) {
+      setSubmitMessage({
+        type: 'error',
+        message: 'You must be logged in to add an event. Please log in and try again.'
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitMessage({ type: '', message: '' });
 
@@ -101,13 +114,21 @@ const AddEvent = () => {
         formDataToSend.append('image', formData.image);
       }
 
+      console.log('📤 Submitting event with token:', token ? 'Token present' : 'No token');
+
       // Send to backend using the new endpoint
-      const response = await fetch('http://localhost:5001/api/events/with-image', {
+      const response = await fetch('http://localhost:5002/api/events/with-image', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: formDataToSend // Don't set Content-Type header, let browser set it
       });
 
+      console.log('📥 Response status:', response.status);
+
       const result = await response.json();
+      console.log('📥 Server response:', result);
 
       if (result.success) {
         setSubmitMessage({
@@ -132,10 +153,23 @@ const AddEvent = () => {
           // navigate('/events');
         }, 3000);
       } else {
-        setSubmitMessage({
-          type: 'error',
-          message: result.message || 'Failed to submit event. Please try again.'
-        });
+        // Handle different error types
+        if (response.status === 401) {
+          setSubmitMessage({
+            type: 'error',
+            message: 'Authentication failed. Please log in again and try again.'
+          });
+        } else if (response.status === 403) {
+          setSubmitMessage({
+            type: 'error',
+            message: 'You do not have permission to add events.'
+          });
+        } else {
+          setSubmitMessage({
+            type: 'error',
+            message: result.message || 'Failed to submit event. Please try again.'
+          });
+        }
       }
     } catch (error) {
       console.error('Submission error:', error);

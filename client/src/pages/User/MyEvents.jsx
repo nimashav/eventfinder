@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import './MyEvents.css';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 
 const MyEvents = () => {
-  const [events, setEvent] = useState([]);
+  const { token, user, isAuthenticated } = useAuth();
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all');
@@ -18,17 +20,32 @@ const MyEvents = () => {
   const fetchMyEvents = async () => {
     try {
       setLoading(true);
-      // For demo purposes, show all events since we don't have user authentication
-      // In real app, you would filter by user ID
-      const response = await fetch(`http://localhost:5001/api/events`);
+      setError('');
+
+      // Check if user is authenticated
+      if (!token || !isAuthenticated) {
+        setError('You must be logged in to view your events.');
+        setLoading(false);
+        return;
+      }
+
+      // Fetch user's events using the correct endpoint and authentication
+      const response = await fetch(`http://localhost:5002/api/events/user/my-events`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch events');
+        throw new Error(`HTTP ${response.status}: Failed to fetch events`);
       }
 
       const data = await response.json();
       if (data.success) {
         setEvents(data.data);
+        console.log('📥 My Events loaded:', data.data.length, 'events');
       } else {
         throw new Error(data.message || 'Failed to fetch events');
       }
@@ -110,20 +127,31 @@ const MyEvents = () => {
     if (!window.confirm('Are you sure you want to delete this event?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5001/api/events/${eventId}`, {
-        method: 'DELETE'
+      const response = await fetch(`http://localhost:5002/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to delete event');
+        throw new Error(result.message || `HTTP ${response.status}: Failed to delete event`);
       }
 
-      setEvents(events.filter(event => event._id !== eventId));
-      setShowModal(false);
-      alert('Event deleted successfully!');
+      if (result.success) {
+        setEvents(events.filter(event => event._id !== eventId));
+        setShowModal(false);
+        alert('Event deleted successfully!');
+        console.log('✅ Event deleted:', eventId);
+      } else {
+        throw new Error(result.message || 'Failed to delete event');
+      }
     } catch (error) {
       console.error('Error deleting event:', error);
-      alert('Failed to delete event. Please try again.');
+      alert(`Failed to delete event: ${error.message}`);
     }
   };
 

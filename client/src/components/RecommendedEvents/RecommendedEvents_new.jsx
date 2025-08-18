@@ -21,7 +21,7 @@ const RecommendedEvents = () => {
     try {
       setLoading(true);
       // Fetch only recommended events for this section
-      const response = await fetch('http://localhost:5001/api/events?status=approved&priority=recommended&limit=8');
+      const response = await fetch('http://localhost:5002/api/events?status=approved&priority=recommended&limit=8');
 
       if (!response.ok) {
         throw new Error('Failed to fetch recommended events');
@@ -78,7 +78,7 @@ const RecommendedEvents = () => {
       date: formatEventDate(event.date),
       time: formatEventTime(event.time),
       location: event.address || event.location,
-      image: event.image ? `http://localhost:5001/uploads/${event.image}` : '/images/art-exhibition.png',
+      image: event.image ? `http://localhost:5002/uploads/${event.image}` : '/images/art-exhibition.png',
       price: event.price || 'Free',
       description: event.description,
       organizer: event.organizer?.name || 'Event Organizer',

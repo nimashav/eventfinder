@@ -76,7 +76,7 @@ const ApprovedEventModal = ({ event, onClose, onUpdatePriority, onDelete, isSubm
           <div className="event-image-section">
             {event.image ? (
               <img
-                src={event.image.startsWith('http') ? event.image : `http://localhost:5001/uploads/${event.image}`}
+                src={event.image.startsWith('http') ? event.image : `http://localhost:5002/uploads/${event.image}`}
                 alt={getEventTitle(event)}
                 className="event-image"
                 onError={(e) => {

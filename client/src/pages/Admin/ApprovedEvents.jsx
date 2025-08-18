@@ -28,7 +28,7 @@ const ApprovedEvents = () => {
       if (selectedPriority) params.append('priority', selectedPriority);
       if (searchQuery) params.append('search', searchQuery);
 
-      const response = await fetch(`http://localhost:5001/api/events/approved?${params}`);
+      const response = await fetch(`http://localhost:5002/api/events/approved?${params}`);
       const result = await response.json();
 
       if (result.success) {
@@ -45,7 +45,7 @@ const ApprovedEvents = () => {
   // Fetch approved events statistics
   const fetchApprovedStats = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/events/admin/approved-stats');
+      const response = await fetch('http://localhost:5002/api/events/admin/approved-stats');
       const result = await response.json();
 
       if (result.success) {
@@ -74,7 +74,7 @@ const ApprovedEvents = () => {
   const handleUpdatePriority = async (eventId, priority) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:5001/api/events/${eventId}/priority`, {
+      const response = await fetch(`http://localhost:5002/api/events/${eventId}/priority`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ const ApprovedEvents = () => {
   const handleDeleteEvent = async (eventId) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:5001/api/events/${eventId}`, {
+      const response = await fetch(`http://localhost:5002/api/events/${eventId}`, {
         method: 'DELETE',
       });
 
@@ -323,8 +323,8 @@ const ApprovedEvents = () => {
                                     {event.image ? (
                                       <img
                                         src={event.image?.startsWith('http') ? event.image :
-                                          event.image?.startsWith('/uploads') ? `http://localhost:5001${event.image}` :
-                                            event.image?.includes('.') ? `http://localhost:5001/uploads/${event.image}` :
+                                          event.image?.startsWith('/uploads') ? `http://localhost:5002${event.image}` :
+                                            event.image?.includes('.') ? `http://localhost:5002/uploads/${event.image}` :
                                               `/images/${event.image}`}
                                         alt="Event"
                                       />
