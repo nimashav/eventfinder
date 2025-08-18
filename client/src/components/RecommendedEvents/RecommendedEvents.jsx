@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './RecommendedEvents.css';
@@ -12,6 +13,154 @@ const RecommendedEvents = () => {
   const [approvedEvents, setApprovedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Sample recommended event data with expanded details for fallback
+  const fallbackEvents = [
+    {
+      id: 1,
+      title: 'Fun-Festa Carnival',
+      category: 'Music',
+      date: 'Nov 15, 2025',
+      location: 'The Blue Note',
+      image: '/images/Fun-Festa-carnival.jpg',
+      price: '$40',
+      description: 'A vibrant music carnival with live performances, food stalls, and fun activities for all ages.',
+      organizer: 'City Events Group',
+      highlights: [
+        'Live bands and DJs',
+        'Carnival games and prizes',
+        'Street food and drinks',
+        'Family-friendly atmosphere',
+        'Fireworks show at night'
+      ]
+    },
+    {
+      id: 2,
+      title: 'Nimnada-Concert',
+      category: 'Art & Culture',
+      date: 'Dec 5, 2025',
+      location: 'Community Hall',
+      image: '/images/Nimnada-Concert.jpg',
+      price: '$15',
+      description: 'A cultural concert featuring traditional and modern performances by local artists.',
+      organizer: 'Nimnada Arts Foundation',
+      highlights: [
+        'Traditional music and dance',
+        'Artisan market',
+        'Meet the performers',
+        'Cultural workshops',
+        'Refreshments included'
+      ]
+    },
+    {
+      id: 3,
+      title: 'Code Innovators Hackathon',
+      category: 'Tech & Innovation',
+      date: 'Jan 10-12, 2026',
+      location: 'Innovation Hub',
+      image: '/images/hackathon.png',
+      price: '$50',
+      description: 'A 48-hour hackathon for developers, designers, and entrepreneurs to build innovative tech solutions.',
+      organizer: 'Tech Innovators',
+      highlights: [
+        'Team and solo tracks',
+        'Mentorship sessions',
+        'Prizes for top projects',
+        'Networking opportunities',
+        'Free swag and meals'
+      ]
+    },
+    {
+      id: 4,
+      title: 'Annual City Marathon',
+      category: 'Sports',
+      date: 'Feb 15, 2026',
+      location: 'Downtown Loop',
+      image: '/images/annual marathon.png',
+      price: '$80',
+      description: 'Join thousands of runners in the city’s biggest marathon event. All skill levels welcome!',
+      organizer: 'City Sports League',
+      highlights: [
+        'Full and half marathon options',
+        'Finisher medals',
+        'Hydration stations',
+        'Live music along the route',
+        'Charity fundraising'
+      ]
+    },
+    {
+      id: 5,
+      title: 'Gourmet Pasta Workshop',
+      category: 'Food & Drink',
+      date: 'Nov 17, 2025',
+      location: 'Culinary Institute',
+      image: '/images/pasta workshop.jpg',
+      price: '$30',
+      description: 'Learn to make authentic pasta from scratch with expert chefs. Includes tasting session.',
+      organizer: 'Culinary Institute',
+      highlights: [
+        'Hands-on pasta making',
+        'Recipe booklet included',
+        'Tasting session',
+        'Certificate of completion',
+        'All skill levels welcome'
+      ]
+    },
+    {
+      id: 6,
+      title: 'Live Rock Show: The Thunderbolts',
+      category: 'Music',
+      date: 'Apr 27, 2026',
+      location: 'The Arena',
+      image: '/images/rock-show.jpg',
+      price: '$60',
+      description: 'Experience an electrifying live rock concert by The Thunderbolts with special guests.',
+      organizer: 'Arena Live',
+      highlights: [
+        'Opening acts',
+        'Merchandise stalls',
+        'Meet & greet passes',
+        'Food and drinks available',
+        'After-party event'
+      ]
+    },
+    {
+      id: 7,
+      title: 'Advanced Photography Workshop',
+      category: 'Art & Culture',
+      date: 'May 10-11, 2026',
+      location: 'Media Studio',
+      image: '/images/tech-summit.png',
+      price: '$120',
+      description: 'Take your photography skills to the next level with hands-on training and expert tips.',
+      organizer: 'Media Studio',
+      highlights: [
+        'Studio and outdoor sessions',
+        'Portfolio review',
+        'Equipment provided',
+        'Small group sizes',
+        'Certificate included'
+      ]
+    },
+    {
+      id: 8,
+      title: 'AI in Everyday Life Webinar',
+      category: 'Tech & Innovation',
+      date: 'June 3, 2026',
+      location: 'Online Event',
+      image: '/images/webinar.png',
+      price: 'Free',
+      description: 'A free online webinar exploring the impact of AI on daily life, with expert speakers.',
+      organizer: 'AI Insights',
+      highlights: [
+        'Live Q&A session',
+        'Downloadable resources',
+        'Certificate of attendance',
+        'Networking lounge',
+        'Giveaways for attendees'
+      ]
+    },
+  ];
 
   useEffect(() => {
     fetchRecommendedEvents();
@@ -111,7 +260,7 @@ const RecommendedEvents = () => {
         <div className="container">
           <div className="section-header">
             <h2>Recommended Events</h2>
-            <p>Loading the latest recommended events...</p>
+            <p>Loading the latest approved events...</p>
           </div>
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -209,6 +358,8 @@ const RecommendedEvents = () => {
             </Link>
           )}
         </div>
+
+
 
         {/* Event Details Modal */}
         {isModalOpen && (

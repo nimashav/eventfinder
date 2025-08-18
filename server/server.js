@@ -7,13 +7,14 @@ const path = require('path');
 dotenv.config();
 
 const eventRoutes = require('./routes/eventRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001'], // Allow both dev servers
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'], // Allow both dev servers and Vite
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' })); // For larger image uploads
@@ -30,6 +31,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api/events', eventRoutes);
+app.use('/api/auth', authRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -46,6 +48,7 @@ app.get('/', (req, res) => {
     message: 'EventFinder API is running',
     endpoints: {
       events: '/api/events',
+      auth: '/api/auth',
       health: '/api/health'
     }
   });

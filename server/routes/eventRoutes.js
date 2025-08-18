@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const Event = require('../models/Event');
+const { authenticateToken, optionalAuth, requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 // Configure multer for file upload
@@ -34,7 +35,7 @@ const upload = multer({
 });
 
 // POST upload image endpoint
-router.post('/upload-image', upload.single('image'), (req, res) => {
+router.post('/upload-image', authenticateToken, upload.single('image'), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -63,7 +64,7 @@ router.post('/upload-image', upload.single('image'), (req, res) => {
 });
 
 // GET all events (with status filtering)
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { status, category, priority, limit } = req.query;
     let filter = {};
@@ -171,7 +172,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST create new event (automatically set to pending)
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     // Extract form data
     const {
@@ -194,6 +195,14 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // Prepare organizer data with user information
+    const organizerData = {
+      name: organizer?.name || `${req.user.firstName} ${req.user.lastName}`,
+      email: organizer?.email || req.user.email,
+      phone: organizer?.phone || req.user.phone,
+      userId: req.user._id
+    };
+
     // Create new event with pending status
     const newEvent = new Event({
       eventName: eventName.trim(),
@@ -203,7 +212,7 @@ router.post('/', async (req, res) => {
       time: time.trim(),
       category,
       image: image || null,
-      organizer: organizer || { name: 'Anonymous' },
+      organizer: organizerData,
       status: 'pending' // Always pending when submitted
     });
 
@@ -235,7 +244,7 @@ router.post('/', async (req, res) => {
 });
 
 // POST create new event with image upload (multipart form data)
-router.post('/with-image', upload.single('image'), async (req, res) => {
+router.post('/with-image', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     // Extract form data
     const {
@@ -248,13 +257,24 @@ router.post('/with-image', upload.single('image'), async (req, res) => {
       organizer
     } = req.body;
 
-    // Parse organizer if it's a JSON string
-    let organizerData = { name: 'Anonymous' };
+    // Parse organizer if it's a JSON string, or use user data
+    let organizerData = {
+      name: `${req.user.firstName} ${req.user.lastName}`,
+      email: req.user.email,
+      phone: req.user.phone,
+      userId: req.user._id
+    };
+
     if (organizer) {
       try {
-        organizerData = typeof organizer === 'string' ? JSON.parse(organizer) : organizer;
+        const parsedOrganizer = typeof organizer === 'string' ? JSON.parse(organizer) : organizer;
+        organizerData = {
+          ...organizerData,
+          ...parsedOrganizer,
+          userId: req.user._id // Always keep the user ID
+        };
       } catch (e) {
-        organizerData = { name: organizer };
+        organizerData.name = organizer;
       }
     }
 
@@ -309,7 +329,7 @@ router.post('/with-image', upload.single('image'), async (req, res) => {
 });
 
 // PUT update event status (admin only)
-router.put('/:id/status', async (req, res) => {
+router.put('/:id/status', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { status, reviewedBy, rejectionReason, priority } = req.body;
 
@@ -381,7 +401,7 @@ router.put('/:id/status', async (req, res) => {
 });
 
 // Update event priority (for approved events)
-router.put('/:id/priority', async (req, res) => {
+router.put('/:id/priority', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { priority } = req.body;
 
@@ -428,7 +448,7 @@ router.put('/:id/priority', async (req, res) => {
 });
 
 // DELETE event
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const event = await Event.findByIdAndDelete(req.params.id);
 
@@ -453,7 +473,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // GET pending events count (for admin dashboard)
-router.get('/admin/stats', async (req, res) => {
+router.get('/admin/stats', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const stats = await Event.aggregate([
       {
@@ -490,7 +510,7 @@ router.get('/admin/stats', async (req, res) => {
 });
 
 // GET approved events statistics
-router.get('/admin/approved-stats', async (req, res) => {
+router.get('/admin/approved-stats', authenticateToken, requireAdmin, async (req, res) => {
   try {
     // Get basic counts
     const totalApproved = await Event.countDocuments({ status: 'approved' });
@@ -543,6 +563,39 @@ router.get('/admin/approved-stats', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch approved events statistics',
+      error: error.message
+    });
+  }
+});
+
+// GET user's own events
+router.get('/user/my-events', authenticateToken, async (req, res) => {
+  try {
+    const { status, category, limit } = req.query;
+    let filter = { 'organizer.userId': req.user._id };
+
+    if (status) filter.status = status;
+    if (category) filter.category = category;
+
+    let query = Event.find(filter)
+      .sort({ submittedAt: -1 }) // Most recent first
+      .select('-__v');
+
+    if (limit) {
+      query = query.limit(parseInt(limit));
+    }
+
+    const events = await query;
+
+    res.json({
+      success: true,
+      count: events.length,
+      data: events
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch user events',
       error: error.message
     });
   }

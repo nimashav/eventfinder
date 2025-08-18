@@ -36,7 +36,12 @@ const eventSchema = new mongoose.Schema({
   organizer: {
     name: { type: String, default: 'Anonymous' },
     email: { type: String },
-    phone: { type: String }
+    phone: { type: String },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    }
   },
   status: {
     type: String,
