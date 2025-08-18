@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import AdminHeader from '../../components/AdminHeader/AdminHeader.jsx';
 import AdminSidebar from '../../components/AdminSidebar/AdminSidebar.jsx';
 import ApprovedEventModal from '../../components/ApprovedEventModal/ApprovedEventModal.jsx';
@@ -7,6 +8,7 @@ import './AdminBase.css';
 import './ApprovedEvents.css';
 
 const ApprovedEvents = () => {
+  const { user, token } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedPriority, setSelectedPriority] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,6 +21,12 @@ const ApprovedEvents = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  // Create auth headers
+  const getAuthHeaders = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  });
 
   // Fetch approved events from backend
   const fetchApprovedEvents = async () => {
@@ -45,7 +53,9 @@ const ApprovedEvents = () => {
   // Fetch approved events statistics
   const fetchApprovedStats = async () => {
     try {
-      const response = await fetch('http://localhost:5002/api/events/admin/approved-stats');
+      const response = await fetch('http://localhost:5002/api/events/admin/approved-stats', {
+        headers: getAuthHeaders()
+      });
       const result = await response.json();
 
       if (result.success) {
@@ -76,9 +86,7 @@ const ApprovedEvents = () => {
     try {
       const response = await fetch(`http://localhost:5002/api/events/${eventId}/priority`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ priority }),
       });
 
@@ -105,6 +113,7 @@ const ApprovedEvents = () => {
     try {
       const response = await fetch(`http://localhost:5002/api/events/${eventId}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       });
 
       const result = await response.json();

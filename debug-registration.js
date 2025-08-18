@@ -13,7 +13,7 @@ const testRegistrationValidation = async () => {
 
   try {
     console.log('📝 Sending registration data:', testData);
-    
+
     const response = await fetch('http://localhost:5002/api/auth/register', {
       method: 'POST',
       headers: {
@@ -24,7 +24,7 @@ const testRegistrationValidation = async () => {
 
     const data = await response.json();
     console.log('\n📥 Response:', JSON.stringify(data, null, 2));
-    
+
     if (response.ok && data.success) {
       console.log('\n✅ Registration successful!');
     } else {

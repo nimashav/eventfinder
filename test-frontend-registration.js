@@ -13,7 +13,7 @@ const testFrontendRegistration = async () => {
 
   try {
     console.log('📝 Testing with data:', testData);
-    
+
     // Test 1: Direct fetch call (like axios would do)
     console.log('\n🚀 Making direct fetch request...');
     const response = await fetch('http://localhost:5002/api/auth/register', {
@@ -27,7 +27,7 @@ const testFrontendRegistration = async () => {
     const result = await response.json();
     console.log('📥 Response status:', response.status);
     console.log('📥 Response data:', JSON.stringify(result, null, 2));
-    
+
     if (response.ok && result.success) {
       console.log('\n✅ Frontend registration flow should work!');
     } else {

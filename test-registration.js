@@ -20,7 +20,7 @@ const testRegistration = async () => {
 
     const data = await response.json();
     console.log('Registration response:', data);
-    
+
     if (response.ok) {
       console.log('✅ Registration successful!');
     } else {

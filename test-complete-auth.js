@@ -17,7 +17,7 @@ const testData = {
 // Test Registration
 async function testRegistration() {
   console.log('📝 Testing Registration...');
-  
+
   try {
     const response = await fetch('http://localhost:5001/api/auth/register', {
       method: 'POST',
@@ -28,7 +28,7 @@ async function testRegistration() {
     });
 
     const data = await response.json();
-    
+
     if (response.ok && data.success) {
       console.log('✅ Registration successful!');
       console.log(`   User: ${data.data.user.fullName}`);
@@ -48,7 +48,7 @@ async function testRegistration() {
 // Test Login
 async function testLogin(email, password) {
   console.log('\n🔐 Testing Login...');
-  
+
   try {
     const response = await fetch('http://localhost:5001/api/auth/login', {
       method: 'POST',
@@ -59,7 +59,7 @@ async function testLogin(email, password) {
     });
 
     const data = await response.json();
-    
+
     if (response.ok && data.success) {
       console.log('✅ Login successful!');
       console.log(`   User: ${data.data.user.fullName}`);
@@ -78,7 +78,7 @@ async function testLogin(email, password) {
 // Test Protected Route
 async function testProtectedRoute(token) {
   console.log('\n🔒 Testing Protected Route...');
-  
+
   try {
     const response = await fetch('http://localhost:5001/api/auth/me', {
       method: 'GET',
@@ -89,7 +89,7 @@ async function testProtectedRoute(token) {
     });
 
     const data = await response.json();
-    
+
     if (response.ok && data.success) {
       console.log('✅ Protected route access successful!');
       console.log(`   User: ${data.data.user.fullName}`);
@@ -107,20 +107,20 @@ async function testProtectedRoute(token) {
 // Run all tests
 async function runAllTests() {
   console.log('🚀 Starting Authentication Tests...\n');
-  
+
   // Test 1: Registration
   const registrationResult = await testRegistration();
-  
+
   if (registrationResult.success) {
     // Test 2: Login
     const loginResult = await testLogin(testEmail, testPassword);
-    
+
     if (loginResult.success) {
       // Test 3: Protected Route
       await testProtectedRoute(loginResult.token);
     }
   }
-  
+
   console.log('\n🏁 Tests completed!');
   console.log('\n💡 Frontend should now work with these APIs:');
   console.log('   • Registration: http://localhost:5001/api/auth/register');

@@ -448,9 +448,9 @@ router.put('/:id/priority', authenticateToken, requireAdmin, async (req, res) =>
 });
 
 // DELETE event
-router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    const event = await Event.findByIdAndDelete(req.params.id);
+    const event = await Event.findById(req.params.id);
 
     if (!event) {
       return res.status(404).json({
@@ -458,6 +458,27 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
         message: 'Event not found'
       });
     }
+
+    // Check if user is admin or the owner of the event
+    const isAdmin = req.user.role === 'admin';
+    const isOwner = event.organizer.userId && event.organizer.userId.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete your own events'
+      });
+    }
+
+    // Additional check: users can only delete their own pending events
+    if (!isAdmin && event.status !== 'pending') {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete pending events. Contact admin for approved/rejected events.'
+      });
+    }
+
+    await Event.findByIdAndDelete(req.params.id);
 
     res.json({
       success: true,

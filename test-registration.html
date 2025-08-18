@@ -1,87 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration Test</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration Test</title>
 </head>
+
 <body>
-    <h1>Registration Test</h1>
-    <form id="registrationForm">
-        <div>
-            <label>First Name:</label>
-            <input type="text" id="firstName" value="Test" required>
-        </div>
-        <div>
-            <label>Last Name:</label>
-            <input type="text" id="lastName" value="User" required>
-        </div>
-        <div>
-            <label>Email:</label>
-            <input type="email" id="email" value="" required>
-        </div>
-        <div>
-            <label>Password:</label>
-            <input type="password" id="password" value="Test123!" required>
-        </div>
-        <div>
-            <label>Confirm Password:</label>
-            <input type="password" id="confirmPassword" value="Test123!" required>
-        </div>
-        <div>
-            <label>Phone:</label>
-            <input type="tel" id="phone" value="1234567890">
-        </div>
-        <button type="submit">Register</button>
-    </form>
+  <h1>Registration Test</h1>
+  <form id="registrationForm">
+    <div>
+      <label>First Name:</label>
+      <input type="text" id="firstName" value="Test" required>
+    </div>
+    <div>
+      <label>Last Name:</label>
+      <input type="text" id="lastName" value="User" required>
+    </div>
+    <div>
+      <label>Email:</label>
+      <input type="email" id="email" value="" required>
+    </div>
+    <div>
+      <label>Password:</label>
+      <input type="password" id="password" value="Test123!" required>
+    </div>
+    <div>
+      <label>Confirm Password:</label>
+      <input type="password" id="confirmPassword" value="Test123!" required>
+    </div>
+    <div>
+      <label>Phone:</label>
+      <input type="tel" id="phone" value="1234567890">
+    </div>
+    <button type="submit">Register</button>
+  </form>
 
-    <div id="result"></div>
+  <div id="result"></div>
 
-    <script>
-        // Set a unique email
-        document.getElementById('email').value = `test${Date.now()}@example.com`;
+  <script>
+    // Set a unique email
+    document.getElementById('email').value = `test${Date.now()}@example.com`;
 
-        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                confirmPassword: document.getElementById('confirmPassword').value,
-                phone: document.getElementById('phone').value
-            };
+    document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-            console.log('📝 Form data:', formData);
+      const formData = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        confirmPassword: document.getElementById('confirmPassword').value,
+        phone: document.getElementById('phone').value
+      };
 
-            try {
-                const response = await fetch('http://localhost:5002/api/auth/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
+      console.log('📝 Form data:', formData);
 
-                const result = await response.json();
-                console.log('📥 Response:', result);
-
-                const resultDiv = document.getElementById('result');
-                if (response.ok && result.success) {
-                    resultDiv.innerHTML = `<div style="color: green;">✅ Registration successful! User: ${result.data.user.fullName}</div>`;
-                } else {
-                    let errorMessage = result.message || 'Registration failed';
-                    if (result.errors) {
-                        errorMessage += '<br>Errors: ' + result.errors.map(e => `${e.field}: ${e.message}`).join(', ');
-                    }
-                    resultDiv.innerHTML = `<div style="color: red;">❌ ${errorMessage}</div>`;
-                }
-            } catch (error) {
-                console.error('❌ Error:', error);
-                document.getElementById('result').innerHTML = `<div style="color: red;">❌ Network error: ${error.message}</div>`;
-            }
+      try {
+        const response = await fetch('http://localhost:5002/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
         });
-    </script>
+
+        const result = await response.json();
+        console.log('📥 Response:', result);
+
+        const resultDiv = document.getElementById('result');
+        if (response.ok && result.success) {
+          resultDiv.innerHTML = `<div style="color: green;">✅ Registration successful! User: ${result.data.user.fullName}</div>`;
+        } else {
+          let errorMessage = result.message || 'Registration failed';
+          if (result.errors) {
+            errorMessage += '<br>Errors: ' + result.errors.map(e => `${e.field}: ${e.message}`).join(', ');
+          }
+          resultDiv.innerHTML = `<div style="color: red;">❌ ${errorMessage}</div>`;
+        }
+      } catch (error) {
+        console.error('❌ Error:', error);
+        document.getElementById('result').innerHTML = `<div style="color: red;">❌ Network error: ${error.message}</div>`;
+      }
+    });
+  </script>
 </body>
+
 </html>
