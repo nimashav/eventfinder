@@ -66,7 +66,7 @@ const validateRegistration = [
     .isLength({ min: 10, max: 15 })
     .withMessage('Phone number must be between 10 and 15 characters')
     .matches(/^[\+]?[0-9]{10,15}$/)
-    .withMessage('Please enter a valid phone number'),
+    .withMessage('Please enter a valid phone number (10-15 digits only)'),
 
   handleValidationErrors
 ];

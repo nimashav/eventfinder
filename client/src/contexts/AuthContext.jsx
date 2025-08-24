@@ -155,6 +155,7 @@ export const AuthProvider = ({ children }) => {
 
       console.log('🚀 AuthContext: Sending registration request to:', `${API_URL}/auth/register`);
       console.log('📤 AuthContext: Registration data:', userData);
+      console.log('🔗 AuthContext: API_URL is:', API_URL);
 
       const response = await axios.post(`${API_URL}/auth/register`, userData);
 

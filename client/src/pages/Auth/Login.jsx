@@ -185,11 +185,7 @@ const Login = () => {
               </div>
               <div className="feature">
                 <div className="feature-icon">📅</div>
-                <span>Manage Bookings</span>
-              </div>
-              <div className="feature">
-                <div className="feature-icon">⭐</div>
-                <span>Rate & Review</span>
+                <span>Publish Your Events</span>
               </div>
             </div>
           </div>

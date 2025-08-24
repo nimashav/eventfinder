@@ -8,6 +8,7 @@ import './styles/globals.css';
 import LandingPage from './pages/LandingPage/LandingPage.jsx';
 import Login from './pages/Auth/Login.jsx';
 import Register from './pages/Auth/Register.jsx';
+import RegisterDebug from './pages/Auth/RegisterDebug.jsx';
 import AddEvent from './pages/AddEvent/AddEvent.jsx';
 import AdminDashboard from './pages/Admin/AdminDashboard.jsx';
 import ApprovedEvents from './pages/Admin/ApprovedEvents.jsx';
@@ -25,6 +26,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/register-debug" element={<RegisterDebug />} />
 
             {/* Protected Routes */}
             <Route

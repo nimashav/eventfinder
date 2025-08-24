@@ -65,6 +65,13 @@ const Register = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
+    // Validate phone if provided (made less strict)
+    if (formData.phone && formData.phone.trim()) {
+      if (formData.phone.trim().length < 10) {
+        newErrors.phone = 'Please enter a valid phone number (at least 10 digits)';
+      }
+    }
+
     console.log('🔍 Validation errors:', newErrors);
     console.log('📝 Form data:', formData);
 
@@ -75,18 +82,23 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log('🔍 Form submission started with data:', formData);
+
     if (!validateForm()) {
+      console.log('❌ Form validation failed');
       return;
     }
 
+    console.log('✅ Form validation passed');
+
     try {
       const registrationData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim().toLowerCase(),
         password: formData.password,
         confirmPassword: formData.confirmPassword,
-        phone: formData.phone
+        phone: formData.phone.trim()
       };
 
       console.log('📝 Sending registration data:', registrationData);
@@ -96,14 +108,15 @@ const Register = () => {
       console.log('📥 Registration result:', result);
 
       if (result && result.success) {
+        console.log('✅ Registration successful, navigating to home');
         // Redirect to dashboard or home
         navigate('/');
       } else {
+        console.error('❌ Registration failed:', result?.error);
         // Error will be handled by AuthContext and displayed via error state
-        console.error('Registration failed:', result?.error);
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('💥 Registration error:', error);
     }
   };
 
@@ -217,6 +230,9 @@ const Register = () => {
                 </button>
               </div>
               {errors.password && <span className="error-text">{errors.password}</span>}
+              <div className="password-requirements">
+                <small>Password must be at least 6 characters long</small>
+              </div>
             </div>
 
             <div className="form-group">

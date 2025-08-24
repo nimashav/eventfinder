@@ -137,6 +137,17 @@
   margin-top: 0.25rem;
 }
 
+.password-requirements {
+  margin-top: 0.25rem;
+}
+
+.password-requirements small {
+  color: var(--text-dark);
+  opacity: 0.6;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
 /* Form Options */
 .form-options {
   display: flex;
