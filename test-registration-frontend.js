@@ -4,7 +4,7 @@ const axios = require('axios');
 const testRegistration = async () => {
   try {
     console.log('🧪 Testing registration endpoint...');
-    
+
     const testUser = {
       firstName: 'Test',
       lastName: 'User',
@@ -18,14 +18,14 @@ const testRegistration = async () => {
     console.log('Request data:', testUser);
 
     const response = await axios.post('http://localhost:5002/api/auth/register', testUser);
-    
+
     console.log('✅ Registration successful!');
     console.log('Response:', response.data);
 
   } catch (error) {
     console.error('❌ Registration failed!');
     console.error('Error:', error.response?.data || error.message);
-    
+
     if (error.response) {
       console.error('Status:', error.response.status);
       console.error('Data:', error.response.data);

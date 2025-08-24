@@ -323,30 +323,70 @@ router.put('/change-password', authenticateToken, validateChangePassword, async 
 });
 
 // @route   GET /api/auth/users
-// @desc    Get all users (Admin only)
+// @desc    Get all users with filtering and search (Admin only)
 // @access  Private/Admin
 router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    const { search, role, status } = req.query;
 
-    const users = await User.find()
-      .select('-password')
+    // Build query object
+    let query = {};
+
+    // Search by name or email
+    if (search) {
+      query.$or = [
+        { firstName: { $regex: search, $options: 'i' } },
+        { lastName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Filter by role
+    if (role && ['user', 'admin'].includes(role)) {
+      query.role = role;
+    }
+
+    // Filter by status
+    if (status) {
+      if (status === 'active') {
+        query.isActive = true;
+      } else if (status === 'inactive') {
+        query.isActive = false;
+      }
+    }
+
+    const users = await User.find(query)
+      .select('-password -loginAttempts -lockUntil')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const total = await User.countDocuments();
+    const total = await User.countDocuments(query);
 
     res.json({
       success: true,
       data: {
-        users,
+        users: users.map(user => ({
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+          isActive: user.isActive,
+          phone: user.phone,
+          lastLogin: user.lastLogin,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        })),
         pagination: {
           current: page,
           pages: Math.ceil(total / limit),
-          total
+          total,
+          limit
         }
       }
     });
@@ -447,6 +487,212 @@ router.put('/users/:userId/role', authenticateToken, requireAdmin, async (req, r
     res.status(500).json({
       success: false,
       message: 'Failed to update user role'
+    });
+  }
+});
+
+// @route   DELETE /api/auth/users/:userId
+// @desc    Delete user (Admin only)
+// @access  Private/Admin
+router.delete('/users/:userId', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Prevent admin from deleting themselves
+    if (userId === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot delete your own account'
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    await User.findByIdAndDelete(userId);
+
+    res.json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete user'
+    });
+  }
+});
+
+// @route   POST /api/auth/admin/create-user
+// @desc    Create a new user (Admin only)
+// @access  Private/Admin
+router.post('/admin/create-user', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { firstName, lastName, email, password, phone, role = 'user' } = req.body;
+
+    // Validate required fields
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'First name, last name, email, and password are required'
+      });
+    }
+
+    // Validate role
+    if (!['user', 'admin'].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid role. Must be either "user" or "admin"'
+      });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User with this email already exists'
+      });
+    }
+
+    // Create new user
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      role
+    });
+
+    await user.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      data: {
+        user: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+          phone: user.phone,
+          isActive: user.isActive,
+          createdAt: user.createdAt
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Create user error:', error);
+
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email already exists'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create user',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+});
+
+// @route   GET /api/auth/admin/user-stats
+// @desc    Get user statistics (Admin only)
+// @access  Private/Admin
+router.get('/admin/user-stats', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const activeUsers = await User.countDocuments({ isActive: true });
+    const adminUsers = await User.countDocuments({ role: 'admin' });
+    const inactiveUsers = await User.countDocuments({ isActive: false });
+
+    // Get new registrations from today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const newRegistrations = await User.countDocuments({
+      createdAt: { $gte: today }
+    });
+
+    // Get recent user activity (users who logged in within last 24 hours)
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentActivity = await User.find({
+      lastLogin: { $gte: yesterday }
+    })
+    .select('firstName lastName email lastLogin')
+    .sort({ lastLogin: -1 })
+    .limit(10);
+
+    res.json({
+      success: true,
+      data: {
+        stats: {
+          totalUsers,
+          activeUsers,
+          adminUsers,
+          inactiveUsers,
+          newRegistrations
+        },
+        recentActivity
+      }
+    });
+  } catch (error) {
+    console.error('Get user stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get user statistics'
+    });
+  }
+});
+
+// @route   GET /api/auth/admin/users/export
+// @desc    Export user data (Admin only)
+// @access  Private/Admin
+router.get('/admin/users/export', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const users = await User.find()
+      .select('-password -loginAttempts -lockUntil')
+      .sort({ createdAt: -1 });
+
+    // Format data for CSV export
+    const csvData = users.map(user => ({
+      ID: user._id,
+      'First Name': user.firstName,
+      'Last Name': user.lastName,
+      'Full Name': user.fullName,
+      Email: user.email,
+      Role: user.role,
+      Status: user.isActive ? 'Active' : 'Inactive',
+      Phone: user.phone || '',
+      'Last Login': user.lastLogin ? user.lastLogin.toISOString() : '',
+      'Created At': user.createdAt.toISOString(),
+      'Updated At': user.updatedAt.toISOString()
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        users: csvData,
+        totalCount: users.length,
+        exportDate: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Export users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to export user data'
     });
   }
 });

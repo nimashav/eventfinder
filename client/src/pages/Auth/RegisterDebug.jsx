@@ -154,11 +154,11 @@ const RegisterDebug = () => {
               type="submit"
               className="auth-submit-btn"
               disabled={loading}
-              style={{ 
-                background: '#007bff', 
-                color: 'white', 
-                padding: '10px 20px', 
-                border: 'none', 
+              style={{
+                background: '#007bff',
+                color: 'white',
+                padding: '10px 20px',
+                border: 'none',
                 borderRadius: '5px',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.6 : 1
