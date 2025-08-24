@@ -1,9 +1,70 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
 const Event = require('../models/Event');
+const { authenticateToken, optionalAuth, requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 
+// Configure multer for file upload
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/') // Files will be stored in uploads/ directory
+  },
+  filename: function (req, file, cb) {
+    // Generate unique filename with timestamp
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // Check if file is an image
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
+
+// POST upload image endpoint
+router.post('/upload-image', authenticateToken, upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file uploaded'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Image uploaded successfully',
+      data: {
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        url: `/uploads/${req.file.filename}`
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to upload image',
+      error: error.message
+    });
+  }
+});
+
 // GET all events (with status filtering)
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { status, category, priority, limit } = req.query;
     let filter = {};
@@ -39,9 +100,41 @@ router.get('/', async (req, res) => {
 // GET approved events (specific route before /:id)
 router.get('/approved', async (req, res) => {
   try {
-    const approvedEvents = await Event.find({ status: 'approved' }).sort({ createdAt: -1 });
+    const { category, priority, search, limit } = req.query;
+    let filter = { status: 'approved' };
+
+    if (category) filter.category = category;
+    if (priority) filter.priority = priority;
+
+    let query = Event.find(filter);
+
+    // Add search functionality
+    if (search) {
+      query = query.where({
+        $or: [
+          { eventName: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { 'organizer.name': { $regex: search, $options: 'i' } }
+        ]
+      });
+    }
+
+    // Sort by priority (featured first) then by date
+    query = query.sort({
+      priority: -1, // featured events first 
+      date: 1, // upcoming events first
+      createdAt: -1 // newest first
+    });
+
+    if (limit) {
+      query = query.limit(parseInt(limit));
+    }
+
+    const approvedEvents = await query;
+
     res.json({
       success: true,
+      count: approvedEvents.length,
       data: approvedEvents
     });
   } catch (error) {
@@ -79,7 +172,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST create new event (automatically set to pending)
-router.post('/', async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     // Extract form data
     const {
@@ -90,7 +183,8 @@ router.post('/', async (req, res) => {
       time,
       category,
       image,
-      organizer
+      organizer,
+      pricing
     } = req.body;
 
     // Validate required fields
@@ -102,6 +196,20 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // Prepare organizer data with user information
+    const organizerData = {
+      name: organizer?.name || `${req.user.firstName} ${req.user.lastName}`,
+      email: organizer?.email || req.user.email,
+      phone: organizer?.phone || req.user.phone,
+      userId: req.user._id
+    };
+
+    // Prepare pricing data
+    const pricingData = pricing || {
+      isFree: true,
+      tickets: [{ type: 'General', price: 0, description: '', available: true }]
+    };
+
     // Create new event with pending status
     const newEvent = new Event({
       eventName: eventName.trim(),
@@ -111,7 +219,8 @@ router.post('/', async (req, res) => {
       time: time.trim(),
       category,
       image: image || null,
-      organizer: organizer || { name: 'Anonymous' },
+      organizer: organizerData,
+      pricing: pricingData,
       status: 'pending' // Always pending when submitted
     });
 
@@ -142,8 +251,110 @@ router.post('/', async (req, res) => {
   }
 });
 
+// POST create new event with image upload (multipart form data)
+router.post('/with-image', authenticateToken, upload.single('image'), async (req, res) => {
+  try {
+    // Extract form data
+    const {
+      eventName,
+      description,
+      address,
+      date,
+      time,
+      category,
+      organizer,
+      pricing
+    } = req.body;
+
+    // Parse organizer if it's a JSON string, or use user data
+    let organizerData = {
+      name: `${req.user.firstName} ${req.user.lastName}`,
+      email: req.user.email,
+      phone: req.user.phone,
+      userId: req.user._id
+    };
+
+    if (organizer) {
+      try {
+        const parsedOrganizer = typeof organizer === 'string' ? JSON.parse(organizer) : organizer;
+        organizerData = {
+          ...organizerData,
+          ...parsedOrganizer,
+          userId: req.user._id // Always keep the user ID
+        };
+      } catch (e) {
+        organizerData.name = organizer;
+      }
+    }
+
+    // Parse pricing if it's a JSON string
+    let pricingData = {
+      isFree: true,
+      tickets: [{ type: 'General', price: 0, description: '', available: true }]
+    };
+
+    if (pricing) {
+      try {
+        const parsedPricing = typeof pricing === 'string' ? JSON.parse(pricing) : pricing;
+        pricingData = parsedPricing;
+      } catch (e) {
+        console.error('Error parsing pricing data:', e);
+      }
+    }
+
+    // Validate required fields
+    if (!eventName || !description || !address || !date || !time || !category) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields',
+        required: ['eventName', 'description', 'address', 'date', 'time', 'category']
+      });
+    }
+
+    // Create new event with pending status
+    const newEvent = new Event({
+      eventName: eventName.trim(),
+      description: description.trim(),
+      address: address.trim(),
+      date: new Date(date),
+      time: time.trim(),
+      category,
+      image: req.file ? req.file.filename : null, // Store uploaded filename
+      organizer: organizerData,
+      pricing: pricingData,
+      status: 'pending' // Always pending when submitted
+    });
+
+    // Save to database
+    const savedEvent = await newEvent.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Event submitted successfully! It will be reviewed by admin.',
+      data: savedEvent,
+      imageUploaded: !!req.file
+    });
+  } catch (error) {
+    // Handle mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create event',
+      error: error.message
+    });
+  }
+});
+
 // PUT update event status (admin only)
-router.put('/:id/status', async (req, res) => {
+router.put('/:id/status', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { status, reviewedBy, rejectionReason, priority } = req.body;
 
@@ -215,7 +426,7 @@ router.put('/:id/status', async (req, res) => {
 });
 
 // Update event priority (for approved events)
-router.put('/:id/priority', async (req, res) => {
+router.put('/:id/priority', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { priority } = req.body;
 
@@ -262,9 +473,9 @@ router.put('/:id/priority', async (req, res) => {
 });
 
 // DELETE event
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    const event = await Event.findByIdAndDelete(req.params.id);
+    const event = await Event.findById(req.params.id);
 
     if (!event) {
       return res.status(404).json({
@@ -272,6 +483,27 @@ router.delete('/:id', async (req, res) => {
         message: 'Event not found'
       });
     }
+
+    // Check if user is admin or the owner of the event
+    const isAdmin = req.user.role === 'admin';
+    const isOwner = event.organizer.userId && event.organizer.userId.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete your own events'
+      });
+    }
+
+    // Additional check: users can only delete their own pending events
+    if (!isAdmin && event.status !== 'pending') {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete pending events. Contact admin for approved/rejected events.'
+      });
+    }
+
+    await Event.findByIdAndDelete(req.params.id);
 
     res.json({
       success: true,
@@ -287,7 +519,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // GET pending events count (for admin dashboard)
-router.get('/admin/stats', async (req, res) => {
+router.get('/admin/stats', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const stats = await Event.aggregate([
       {
@@ -318,6 +550,98 @@ router.get('/admin/stats', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch statistics',
+      error: error.message
+    });
+  }
+});
+
+// GET approved events statistics
+router.get('/admin/approved-stats', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    // Get basic counts
+    const totalApproved = await Event.countDocuments({ status: 'approved' });
+    const featuredCount = await Event.countDocuments({ status: 'approved', priority: 'featured' });
+    const recommendedCount = await Event.countDocuments({ status: 'approved', priority: 'recommended' });
+
+    // Get upcoming events (events with date in the future)
+    const upcomingCount = await Event.countDocuments({
+      status: 'approved',
+      date: { $gte: new Date() }
+    });
+
+    // Get category breakdown
+    const categoryStats = await Event.aggregate([
+      { $match: { status: 'approved' } },
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    // Get priority breakdown
+    const priorityStats = await Event.aggregate([
+      { $match: { status: 'approved' } },
+      {
+        $group: {
+          _id: '$priority',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const result = {
+      total: totalApproved,
+      upcoming: upcomingCount,
+      featured: featuredCount,
+      recommended: recommendedCount,
+      categories: categoryStats,
+      priorities: priorityStats
+    };
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch approved events statistics',
+      error: error.message
+    });
+  }
+});
+
+// GET user's own events
+router.get('/user/my-events', authenticateToken, async (req, res) => {
+  try {
+    const { status, category, limit } = req.query;
+    let filter = { 'organizer.userId': req.user._id };
+
+    if (status) filter.status = status;
+    if (category) filter.category = category;
+
+    let query = Event.find(filter)
+      .sort({ submittedAt: -1 }) // Most recent first
+      .select('-__v');
+
+    if (limit) {
+      query = query.limit(parseInt(limit));
+    }
+
+    const events = await query;
+
+    res.json({
+      success: true,
+      count: events.length,
+      data: events
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch user events',
       error: error.message
     });
   }

@@ -76,7 +76,7 @@ const ApprovedEventModal = ({ event, onClose, onUpdatePriority, onDelete, isSubm
           <div className="event-image-section">
             {event.image ? (
               <img
-                src={event.image.startsWith('http') ? event.image : `/images/${event.image}`}
+                src={event.image.startsWith('http') ? event.image : `http://localhost:5002/uploads/${event.image}`}
                 alt={getEventTitle(event)}
                 className="event-image"
                 onError={(e) => {
@@ -115,7 +115,7 @@ const ApprovedEventModal = ({ event, onClose, onUpdatePriority, onDelete, isSubm
                   </svg>
                   Location:
                 </span>
-                <span className="value">{event.location || 'Not specified'}</span>
+                <span className="value">{event.address || 'Not specified'}</span>
               </div>
 
               <div className="detail-row">

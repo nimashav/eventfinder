@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import AdminHeader from '../../components/AdminHeader/AdminHeader.jsx';
 import AdminSidebar from '../../components/AdminSidebar/AdminSidebar.jsx';
 import EventReviewModal from '../../components/EventReviewModal/EventReviewModal.jsx';
@@ -7,21 +8,29 @@ import './AdminBase.css';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
+  const { user, token } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedPriority, setSelectedPriority] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [pendingEvents, setPendingEvents] = useState([]);
-  const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0, total: 0 });
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [stats, setStats] = useState({ total: 0, upcoming: 0, featured: 0, recommended: 0, categories: [] }); const [selectedEvent, setSelectedEvent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
 
+  // Create auth headers
+  const getAuthHeaders = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  });
+
   // Fetch pending events from backend
   const fetchPendingEvents = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/events?status=pending');
+      const response = await fetch('http://localhost:5002/api/events?status=pending', {
+        headers: getAuthHeaders()
+      });
       const result = await response.json();
 
       if (result.success) {
@@ -38,7 +47,9 @@ const AdminDashboard = () => {
   // Fetch stats from backend
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/events/admin/stats');
+      const response = await fetch('http://localhost:5002/api/events/admin/stats', {
+        headers: getAuthHeaders()
+      });
       const result = await response.json();
 
       if (result.success) {
@@ -67,15 +78,13 @@ const AdminDashboard = () => {
   const handleApprove = async (eventId, priority) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:5001/api/events/${eventId}/status`, {
+      const response = await fetch(`http://localhost:5002/api/events/${eventId}/status`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           status: 'approved',
           priority: priority,
-          reviewedBy: 'Admin', // In real app, this would be the logged-in admin
+          reviewedBy: user?.fullName || 'Admin',
         }),
       });
 
@@ -100,14 +109,12 @@ const AdminDashboard = () => {
   const handleReject = async (eventId, rejectionReason) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:5001/api/events/${eventId}/status`, {
+      const response = await fetch(`http://localhost:5002/api/events/${eventId}/status`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           status: 'rejected',
-          reviewedBy: 'Admin', // In real app, this would be the logged-in admin
+          reviewedBy: user?.fullName || 'Admin',
           rejectionReason: rejectionReason,
         }),
       });
@@ -279,7 +286,24 @@ const AdminDashboard = () => {
                                 <div className="event-info">
                                   <div className="event-avatar">
                                     {event.image ? (
-                                      <img src={`/images/${event.image}`} alt="Event" />
+                                      <>
+                                        <img
+                                          src={event.image.startsWith('http') ? event.image :
+                                            event.image.startsWith('/uploads') ? `http://localhost:5002${event.image}` :
+                                              event.image.includes('.') ? `http://localhost:5002/uploads/${event.image}` :
+                                                `/images/${event.image}`}
+                                          alt="Event"
+                                          onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                          }}
+                                        />
+                                        <div className="event-placeholder" style={{ display: 'none' }}>
+                                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                                          </svg>
+                                        </div>
+                                      </>
                                     ) : (
                                       <div className="event-placeholder">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -355,43 +379,22 @@ const AdminDashboard = () => {
 
             {/* Right Sidebar with Recent Activity */}
             <aside className="admin-right-sidebar right-sidebar">
+              {/* Event Categories */}
               <div className="admin-sidebar-section sidebar-section">
-                <h3>Quick Stats</h3>
-                <div className="quick-stats">
-                  <div className="quick-stat-item">
-                    <span className="stat-label">Total Events</span>
-                    <span className="stat-value">{stats.total}</span>
-                  </div>
-                  <div className="quick-stat-item">
-                    <span className="stat-label">Approved</span>
-                    <span className="stat-value approved">{stats.approved}</span>
-                  </div>
-                  <div className="quick-stat-item">
-                    <span className="stat-label">Rejected</span>
-                    <span className="stat-value rejected">{stats.rejected}</span>
-                  </div>
-                  <div className="quick-stat-item">
-                    <span className="stat-label">Pending</span>
-                    <span className="stat-value pending">{stats.pending}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="admin-sidebar-section sidebar-section">
-                <h3>Admin Actions</h3>
-                <div className="admin-actions">
-                  <Link to="/admin/approved-events" className="admin-action-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    View Approved Events
-                  </Link>
-                  <Link to="/admin/user-management" className="admin-action-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                    </svg>
-                    User Management
-                  </Link>
+                <h3>Event Categories</h3>
+                <div className="category-stats">
+                  {stats.categories && stats.categories.length > 0 ? (
+                    stats.categories.map((category, index) => (
+                      <div key={index} className="category-stat">
+                        <span className="category-name">
+                          {category._id ? category._id.charAt(0).toUpperCase() + category._id.slice(1).replace('-', ' ') : 'Uncategorized'}
+                        </span>
+                        <span className="category-count">{category.count}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No categories available</p>
+                  )}
                 </div>
               </div>
             </aside>

@@ -134,7 +134,14 @@ const EventReviewModal = ({ event, onClose, onApprove, onReject, isSubmitting })
                 <div className="detail-group">
                   <h3>Event Image</h3>
                   <div className="event-image">
-                    <img src={`/images/${event.image}`} alt={event.eventName} />
+                    <img
+                      src={event.image.startsWith('http') ? event.image : `http://localhost:5002/uploads/${event.image}`}
+                      alt={event.eventName}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.parentElement.innerHTML = '<p>Image failed to load</p>';
+                      }}
+                    />
                   </div>
                 </div>
               )}

@@ -3,16 +3,187 @@
   padding: 80px 0;
 }
 
+.section-header h2 {
+  color: var(--text-dark);
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.category-filter-badge {
+  font-size: 1.5rem;
+  color: var(--primary);
+  font-weight: 500;
+}
+
 .event-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
   margin-bottom: 50px;
 }
 
-/* Note: Most styles for event cards are already defined in FeaturedEvents.css */
-/* We'll add specific styles for the recommended events section */
+/* Event card improvements for better image fitting */
+.event-grid .event-card {
+  background-color: var(--text-light);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #f1f3f4;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 400px;
+}
 
+.event-grid .event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* Fixed image container */
+.event-grid .event-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0; /* Remove border-radius here since parent handles it */
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* Critical image fixes */
+.event-grid .event-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.5s ease;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: 0; /* Removes text spacing */
+  line-height: 0; /* Removes line height spacing */
+}
+
+.event-grid .event-card:hover .event-image img {
+  transform: scale(1.05);
+}
+
+/* Category badge styling */
+.event-grid .event-category {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background-color: var(--primary);
+  color: var(--text-light);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  z-index: 2;
+}
+
+/* Event info section */
+.event-grid .event-info {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.event-grid .event-info h3 {
+  color: var(--text-dark);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  line-height: 1.3;
+  min-height: 2.6rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Meta information styling */
+.event-meta {
+  margin-bottom: 16px;
+  flex-grow: 1;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.meta-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+/* Event footer */
+.event-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid #f1f3f4;
+  margin-top: auto;
+}
+
+.event-price {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
+.view-details {
+  background-color: var(--primary);
+  color: var(--text-light);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-details:hover {
+  background-color: var(--secondary);
+  transform: translateY(-1px);
+}
+
+/* Ensure no gaps between image and container */
+.event-grid .event-image,
+.event-grid .event-image * {
+  box-sizing: border-box;
+}
+
+/* Force remove any default spacing */
+.event-grid .event-image img {
+  font-size: 0 !important;
+  line-height: 0 !important;
+  vertical-align: top !important;
+}
+
+/* Show more button */
 .show-more-container {
   text-align: center;
   margin-top: 30px;
@@ -32,4 +203,110 @@
 .show-more-button:hover {
   background-color: var(--primary);
   color: var(--text-light);
+}
+
+/* Empty State Styling */
+.no-recommended-events {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.empty-state {
+  text-align: center;
+  max-width: 400px;
+  padding: 40px;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  color: #d1d5db;
+  margin: 0 auto 20px;
+}
+
+.empty-state h3 {
+  color: var(--text-dark);
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.empty-state p {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 25px;
+  line-height: 1.6;
+}
+
+.submit-event-link {
+  display: inline-block;
+  background-color: var(--primary);
+  color: var(--text-light);
+  padding: 12px 24px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.submit-event-link:hover {
+  background-color: var(--secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.error-notice {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.loading-spinner {
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid var(--primary);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .event-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  
+  .event-grid .event-image {
+    height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .event-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .event-grid .event-card {
+    max-width: none;
+  }
+  
+  .event-grid .event-image {
+    height: 160px;
+  }
 }

@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Categories.css';
+import { useCategoryFilter } from '../../context/CategoryFilterContext';
 
 const Categories = () => {
+  const { selectedCategory, handleCategoryChange } = useCategoryFilter();
+
   const categories = [
     { id: 1, name: 'All', icon: '🎭' },
     { id: 2, name: 'Music', icon: '🎵' },
@@ -10,7 +13,13 @@ const Categories = () => {
     { id: 4, name: 'Tech & Innovation', icon: '💻' },
     { id: 5, name: 'Sports', icon: '⚽' },
     { id: 6, name: 'Food & Drink', icon: '🍷' },
+    { id: 7, name: 'Education', icon: '📖' },
+    { id: 8, name: 'Health', icon: '🧑‍⚕️' },
   ];
+
+  const handleCategoryClick = (categoryName) => {
+    handleCategoryChange(categoryName);
+  };
 
   return (
     <section className="categories section">
@@ -19,13 +28,17 @@ const Categories = () => {
           <h2>Explore by Category</h2>
           <p>Find events tailored to your interests</p>
         </div>
-        
+
         <div className="category-buttons">
           {categories.map(category => (
-            <Link key={category.id} to={`/category/${category.name}`} className="category-button">
+            <button
+              key={category.id}
+              onClick={() => handleCategoryClick(category.name)}
+              className={`category-button ${selectedCategory === category.name ? 'active' : ''}`}
+            >
               <span className="category-icon">{category.icon}</span>
               <span>{category.name}</span>
-            </Link>
+            </button>
           ))}
         </div>
       </div>
