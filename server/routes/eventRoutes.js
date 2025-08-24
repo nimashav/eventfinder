@@ -183,7 +183,8 @@ router.post('/', authenticateToken, async (req, res) => {
       time,
       category,
       image,
-      organizer
+      organizer,
+      pricing
     } = req.body;
 
     // Validate required fields
@@ -203,6 +204,12 @@ router.post('/', authenticateToken, async (req, res) => {
       userId: req.user._id
     };
 
+    // Prepare pricing data
+    const pricingData = pricing || {
+      isFree: true,
+      tickets: [{ type: 'General', price: 0, description: '', available: true }]
+    };
+
     // Create new event with pending status
     const newEvent = new Event({
       eventName: eventName.trim(),
@@ -213,6 +220,7 @@ router.post('/', authenticateToken, async (req, res) => {
       category,
       image: image || null,
       organizer: organizerData,
+      pricing: pricingData,
       status: 'pending' // Always pending when submitted
     });
 
@@ -254,7 +262,8 @@ router.post('/with-image', authenticateToken, upload.single('image'), async (req
       date,
       time,
       category,
-      organizer
+      organizer,
+      pricing
     } = req.body;
 
     // Parse organizer if it's a JSON string, or use user data
@@ -278,6 +287,21 @@ router.post('/with-image', authenticateToken, upload.single('image'), async (req
       }
     }
 
+    // Parse pricing if it's a JSON string
+    let pricingData = {
+      isFree: true,
+      tickets: [{ type: 'General', price: 0, description: '', available: true }]
+    };
+
+    if (pricing) {
+      try {
+        const parsedPricing = typeof pricing === 'string' ? JSON.parse(pricing) : pricing;
+        pricingData = parsedPricing;
+      } catch (e) {
+        console.error('Error parsing pricing data:', e);
+      }
+    }
+
     // Validate required fields
     if (!eventName || !description || !address || !date || !time || !category) {
       return res.status(400).json({
@@ -297,6 +321,7 @@ router.post('/with-image', authenticateToken, upload.single('image'), async (req
       category,
       image: req.file ? req.file.filename : null, // Store uploaded filename
       organizer: organizerData,
+      pricing: pricingData,
       status: 'pending' // Always pending when submitted
     });
 

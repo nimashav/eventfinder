@@ -21,6 +21,12 @@ const AddEvent = () => {
       name: user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || '',
       email: user?.email || '',
       phone: user?.phone || ''
+    },
+    pricing: {
+      isFree: true,
+      tickets: [
+        { type: 'General', price: 0, description: '', available: true }
+      ]
     }
   });
 
@@ -39,6 +45,19 @@ const AddEvent = () => {
         organizer: {
           ...prev.organizer,
           [field]: value
+        }
+      }));
+    } else if (name === 'isFree') {
+      // Handle pricing free toggle
+      const isFree = value === 'true';
+      setFormData(prev => ({
+        ...prev,
+        pricing: {
+          ...prev.pricing,
+          isFree,
+          tickets: isFree
+            ? [{ type: 'General', price: 0, description: '', available: true }]
+            : prev.pricing.tickets.map(ticket => ({ ...ticket, price: ticket.price || 0 }))
         }
       }));
     } else {
@@ -75,6 +94,43 @@ const AddEvent = () => {
     }
   };
 
+  const handleTicketChange = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      pricing: {
+        ...prev.pricing,
+        tickets: prev.pricing.tickets.map((ticket, i) =>
+          i === index ? { ...ticket, [field]: value } : ticket
+        )
+      }
+    }));
+  };
+
+  const addTicketType = () => {
+    setFormData(prev => ({
+      ...prev,
+      pricing: {
+        ...prev.pricing,
+        tickets: [
+          ...prev.pricing.tickets,
+          { type: '', price: 0, description: '', available: true }
+        ]
+      }
+    }));
+  };
+
+  const removeTicketType = (index) => {
+    if (formData.pricing.tickets.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        pricing: {
+          ...prev.pricing,
+          tickets: prev.pricing.tickets.filter((_, i) => i !== index)
+        }
+      }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -107,6 +163,17 @@ const AddEvent = () => {
         name: formData.organizer.name.trim() || 'Anonymous',
         email: formData.organizer.email.trim(),
         phone: formData.organizer.phone.trim()
+      }));
+
+      // Append pricing as JSON string
+      formDataToSend.append('pricing', JSON.stringify({
+        isFree: formData.pricing.isFree,
+        tickets: formData.pricing.tickets.map(ticket => ({
+          type: ticket.type.trim() || 'General',
+          price: formData.pricing.isFree ? 0 : parseFloat(ticket.price) || 0,
+          description: ticket.description.trim(),
+          available: ticket.available
+        }))
       }));
 
       // Append image file if exists
@@ -146,7 +213,13 @@ const AddEvent = () => {
             time: '',
             category: '',
             image: null,
-            organizer: { name: '', email: '', phone: '' }
+            organizer: { name: '', email: '', phone: '' },
+            pricing: {
+              isFree: true,
+              tickets: [
+                { type: 'General', price: 0, description: '', available: true }
+              ]
+            }
           });
           setImagePreview(null);
           // Optionally navigate to success page
@@ -192,7 +265,13 @@ const AddEvent = () => {
       time: '',
       category: '',
       image: null,
-      organizer: { name: '', email: '', phone: '' }
+      organizer: { name: '', email: '', phone: '' },
+      pricing: {
+        isFree: true,
+        tickets: [
+          { type: 'General', price: 0, description: '', available: true }
+        ]
+      }
     });
     setImagePreview(null);
     setSubmitMessage({ type: '', message: '' });
@@ -206,10 +285,10 @@ const AddEvent = () => {
         <div className="container">
           <div className="add-event-header">
             <h1>Add New Event</h1>
-            <div className="header-actions">
+            {/* <div className="header-actions">
               <button className="btn-secondary">Previous Events</button>
               <button className="btn-outline">View Guidelines</button>
-            </div>
+            </div> */}
           </div>
 
           {/* Success/Error Message */}
@@ -429,6 +508,123 @@ const AddEvent = () => {
                     </div>
                     <p className="field-note">
                       Upload a high-quality image that represents your event. Max 5MB.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Ticket Pricing Section */}
+                <div className="form-section">
+                  <h2>Ticket Pricing</h2>
+                  <p className="section-description">Set up your event's ticket pricing and types.</p>
+
+                  <div className="form-group">
+                    <label>Event Type</label>
+                    <div className="pricing-toggle">
+                      <label className="radio-option">
+                        <input
+                          type="radio"
+                          name="isFree"
+                          value="true"
+                          checked={formData.pricing.isFree}
+                          onChange={handleInputChange}
+                          disabled={isSubmitting}
+                        />
+                        <span className="radio-label">Free Event</span>
+                      </label>
+                      <label className="radio-option">
+                        <input
+                          type="radio"
+                          name="isFree"
+                          value="false"
+                          checked={!formData.pricing.isFree}
+                          onChange={handleInputChange}
+                          disabled={isSubmitting}
+                        />
+                        <span className="radio-label">Paid Event</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Ticket Types */}
+                  <div className="form-group">
+                    <label>Ticket Types</label>
+                    <div className="ticket-types">
+                      {formData.pricing.tickets.map((ticket, index) => (
+                        <div key={index} className="ticket-type-item">
+                          <div className="ticket-header">
+                            <input
+                              type="text"
+                              placeholder={formData.pricing.isFree ? "General Admission" : "Ticket Type (e.g., Premium, VIP, Standard)"}
+                              value={ticket.type}
+                              onChange={(e) => handleTicketChange(index, 'type', e.target.value)}
+                              disabled={isSubmitting}
+                              className="ticket-type-input"
+                            />
+                            {formData.pricing.tickets.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeTicketType(index)}
+                                disabled={isSubmitting}
+                                className="remove-ticket-btn"
+                                title="Remove ticket type"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="ticket-details">
+                            {!formData.pricing.isFree && (
+                              <div className="price-input">
+                                <label>Price (LKR)</label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  placeholder="0.00"
+                                  value={ticket.price}
+                                  onChange={(e) => handleTicketChange(index, 'price', e.target.value)}
+                                  disabled={isSubmitting}
+                                />
+                              </div>
+                            )}
+
+                            <div className="description-input">
+                              <label>Description (Optional)</label>
+                              <input
+                                type="text"
+                                placeholder={formData.pricing.isFree ? "Free admission for all attendees" : "What's included with this ticket type?"}
+                                value={ticket.description}
+                                onChange={(e) => handleTicketChange(index, 'description', e.target.value)}
+                                disabled={isSubmitting}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {!formData.pricing.isFree && (
+                      <button
+                        type="button"
+                        onClick={addTicketType}
+                        disabled={isSubmitting}
+                        className="add-ticket-btn"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Add Another Ticket Type
+                      </button>
+                    )}
+
+                    <p className="field-note">
+                      {formData.pricing.isFree
+                        ? "Free events are great for community building and attracting larger audiences."
+                        : "You can offer multiple ticket types like Early Bird, VIP, Standard, etc."
+                      }
                     </p>
                   </div>
                 </div>

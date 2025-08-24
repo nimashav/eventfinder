@@ -22,9 +22,9 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText 
           <button type="button" className="cancel-btn" onClick={onClose}>
             {cancelText}
           </button>
-          <button 
-            type="button" 
-            className="confirm-btn" 
+          <button
+            type="button"
+            className="confirm-btn"
             onClick={onConfirm}
             disabled={isLoading}
           >

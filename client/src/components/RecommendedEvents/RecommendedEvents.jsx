@@ -82,6 +82,32 @@ const RecommendedEvents = () => {
     return categoryMap[category] || category;
   };
 
+  const formatPricing = (pricing) => {
+    if (!pricing || pricing.isFree) {
+      return 'Free';
+    }
+
+    const tickets = pricing.tickets || [];
+    if (tickets.length === 0) {
+      return 'Free';
+    }
+
+    if (tickets.length === 1) {
+      return `$${tickets[0].price}`;
+    }
+
+    // Multiple ticket types - show range
+    const prices = tickets.map(ticket => ticket.price).filter(price => price > 0);
+    if (prices.length === 0) {
+      return 'Free';
+    }
+
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+
+    return minPrice === maxPrice ? `$${minPrice}` : `$${minPrice} - $${maxPrice}`;
+  };
+
   // Display recommended events from database, no fallback to hardcoded events
   const displayEvents = approvedEvents.length > 0
     ? approvedEvents.map(event => ({
@@ -92,12 +118,13 @@ const RecommendedEvents = () => {
       time: formatEventTime(event.time),
       location: event.address || event.location,
       image: event.image ? `http://localhost:5002/uploads/${event.image}` : '/images/art-exhibition.png',
-      price: event.price || 'Free',
+      price: formatPricing(event.pricing),
       description: event.description,
       organizer: event.organizer?.name || 'Event Organizer',
       organizerEmail: event.organizer?.email,
       expectedAttendees: event.expectedAttendees,
       priority: event.priority,
+      pricing: event.pricing,
       highlights: event.highlights || [
         'Professionally organized event',
         'Quality experience guaranteed',

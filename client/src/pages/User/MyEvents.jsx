@@ -113,6 +113,32 @@ const MyEvents = () => {
     });
   };
 
+  const formatPricing = (pricing) => {
+    if (!pricing || pricing.isFree) {
+      return 'Free';
+    }
+
+    const tickets = pricing.tickets || [];
+    if (tickets.length === 0) {
+      return 'Free';
+    }
+
+    if (tickets.length === 1) {
+      return `$${tickets[0].price}`;
+    }
+
+    // Multiple ticket types - show range
+    const prices = tickets.map(ticket => ticket.price).filter(price => price > 0);
+    if (prices.length === 0) {
+      return 'Free';
+    }
+
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+
+    return minPrice === maxPrice ? `$${minPrice}` : `$${minPrice} - $${maxPrice}`;
+  };
+
   const handleViewDetails = (event) => {
     setSelectedEvent(event);
     setShowModal(true);
@@ -391,10 +417,43 @@ const MyEvents = () => {
                   <span>{selectedEvent.address}</span>
                 </div>
 
+                <div className="detail-item">
+                  <strong>Price:</strong>
+                  <span className="price-display">{formatPricing(selectedEvent.pricing)}</span>
+                </div>
+
                 <div className="detail-item full-width">
                   <strong>Description:</strong>
                   <p>{selectedEvent.description}</p>
                 </div>
+
+                {/* Pricing Details Section */}
+                {selectedEvent.pricing && selectedEvent.pricing.tickets && selectedEvent.pricing.tickets.length > 0 && (
+                  <div className="detail-item full-width">
+                    <strong>Ticket Information:</strong>
+                    <div className="ticket-pricing-details">
+                      {selectedEvent.pricing.isFree ? (
+                        <div className="free-event-notice">
+                          <span>This is a free event - no tickets required!</span>
+                        </div>
+                      ) : (
+                        <div className="ticket-types">
+                          {selectedEvent.pricing.tickets.map((ticket, index) => (
+                            <div key={index} className="ticket-type">
+                              <div className="ticket-info">
+                                <h4>{ticket.type || 'General Admission'}</h4>
+                                <div className="ticket-price">${ticket.price}</div>
+                              </div>
+                              {ticket.description && (
+                                <p className="ticket-description">{ticket.description}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {selectedEvent.status === 'rejected' && selectedEvent.rejectionReason && (
                   <div className="detail-item full-width rejection-detail">

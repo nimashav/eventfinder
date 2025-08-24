@@ -43,6 +43,31 @@ const eventSchema = new mongoose.Schema({
       default: null
     }
   },
+  pricing: {
+    isFree: {
+      type: Boolean,
+      default: true
+    },
+    tickets: [{
+      type: {
+        type: String,
+        default: 'General'
+      },
+      price: {
+        type: Number,
+        default: 0,
+        min: 0
+      },
+      description: {
+        type: String,
+        default: ''
+      },
+      available: {
+        type: Boolean,
+        default: true
+      }
+    }]
+  },
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],

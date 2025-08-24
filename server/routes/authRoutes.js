@@ -630,9 +630,9 @@ router.get('/admin/user-stats', authenticateToken, requireAdmin, async (req, res
     const recentActivity = await User.find({
       lastLogin: { $gte: yesterday }
     })
-    .select('firstName lastName email lastLogin')
-    .sort({ lastLogin: -1 })
-    .limit(10);
+      .select('firstName lastName email lastLogin')
+      .sort({ lastLogin: -1 })
+      .limit(10);
 
     res.json({
       success: true,

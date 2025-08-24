@@ -724,3 +724,67 @@
     height: 160px;
   }
 }
+
+/* Pricing Styles */
+.price-display {
+  font-weight: 700 !important;
+  color: var(--primary) !important;
+  font-size: 1.1rem !important;
+}
+
+.ticket-pricing-details {
+  margin-top: 10px;
+}
+
+.free-event-notice {
+  padding: 15px;
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border-radius: 8px;
+  border: 1px solid #10b981;
+  color: #047857;
+  font-weight: 600;
+}
+
+.ticket-types {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ticket-type {
+  padding: 15px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.ticket-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.ticket-info h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.ticket-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+  padding: 4px 12px;
+  background-color: rgba(146, 26, 64, 0.1);
+  border-radius: 6px;
+}
+
+.ticket-description {
+  color: #666;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0;
+  font-style: italic;
+}
